@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jeu 8 : Les Parcs Naturels en Péril</title>
+  <style>
+    :root {
+      --primary: #d97706;
+      --accent: #059669;
+      --danger: #dc2626;
+      --bg: #fffbeb;
+      --card: #ffffff;
+      --text: #1e293b;
+      --border: #fde68a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 860px;
+      padding: 24px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+
+    .btn-nav {
+      background: #f1f5f9;
+      color: var(--text);
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .btn-nav:hover { background: #e2e8f0; }
+
+    .score-badge {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 1rem;
+    }
+
+    .step-tag {
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #0f172a;
+      margin-bottom: 8px;
+      font-size: 1.35rem;
+    }
+
+    .instructions {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    /* Grille de sélection */
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .select-card {
+      background: #f8fafc;
+      border: 2px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .select-card:hover {
+      border-color: var(--primary);
+      background: #fef3c7;
+      transform: translateY(-2px);
+    }
+
+    .select-card .icon {
+      font-size: 2rem;
+      margin-bottom: 6px;
+    }
+
+    .select-card .title {
+      font-weight: bold;
+      font-size: 0.95rem;
+      color: #0f172a;
+    }
+
+    .select-card .sub {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+
+    /* Boîte de mission */
+    .mission-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .mission-prompt {
+      font-weight: bold;
+      color: #0f172a;
+      font-size: 1.05rem;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn-choice {
+      background: white;
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.15s;
+    }
+
+    .btn-choice:hover { border-color: var(--primary); }
+    .btn-choice.correct { background: #d1fae5; border-color: var(--accent); color: #065f46; }
+    .btn-choice.wrong { background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+
+    .btn-action {
+      display: block;
+      margin: 20px auto 0 auto;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 25px;
+      cursor: pointer;
+    }
+    .btn-action:hover { background: #b45309; }
+
+    .feedback {
+      text-align: center;
+      margin-top: 14px;
+      font-weight: bold;
+      min-height: 28px;
+      font-size: 0.95rem;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="top-bar">
+      <a href="index.html" class="btn-nav">⬅ Menu principal</a>
+      <div class="score-badge">Points Ranger : <span id="score">0</span> 🛡️</div>
+    </div>
+
+    <!-- MISSION 1 : LES 4 PARCS EN DIFFICULTÉ -->
+    <div id="step-1">
+      <div class="step-tag">Mission 1 sur 3 : Diagnostic des Parcs</div>
+      <h2>Parcs Naturels en Difficulté ⚠️</h2>
+      <p class="instructions">Lis attentivement le rapport d'urgence et clique sur le parc concerné :</p>
+
+      <div class="mission-box">
+        <div class="mission-prompt" id="park-prompt">...</div>
+      </div>
+
+      <div class="grid-cards">
+        <div class="select-card" onclick="checkPark('EVERGLADES')">
+          <div class="icon">🐊</div>
+          <div class="title">Everglades</div>
+          <div class="sub">États-Unis</div>
+        </div>
+
+        <div class="select-card" onclick="checkPark('KAHUZI')">
+          <div class="icon">🦍</div>
+          <div class="title">Kahuzi-Biega</div>
+          <div class="sub">Rép. dém. du Congo</div>
+        </div>
+
+        <div class="select-card" onclick="checkPark('CORAIL')">
+          <div class="icon">🪸</div>
+          <div class="title">Grande Barrière</div>
+          <div class="sub">Australie</div>
+        </div>
+
+        <div class="select-card" onclick="checkPark('AMAZONE')">
+          <div class="icon">🌳</div>
+          <div class="title">Amazone</div>
+          <div class="sub">Amérique du Sud</div>
+        </div>
+      </div>
+
+      <div id="fb-step1" class="feedback"></div>
+      <button id="btn-next1" class="btn-action hidden" onclick="startStep2()">Passer aux Espèces Menacées ➔</button>
+    </div>
+
+    <!-- MISSION 2 : LES ESPÈCES MENACÉES -->
+    <div id="step-2" class="hidden">
+      <div class="step-tag">Mission 2 sur 3 : Sauvetage des Espèces</div>
+      <h2>Espèces Uniques en Danger 🐾</h2>
+      <p class="instructions">Associe chaque espèce à la menace précise qui pèse sur son milieu :</p>
+
+      <div class="mission-box">
+        <div class="mission-prompt" style="text-align:left;">1. 🐦 <b>Fou à pieds bleus (Galápagos)</b> : Quels facteurs menacent cette espèce ?</div>
+        <div class="options-list">
+          <button class="btn-choice" onclick="checkSpecies(this, true, 's1')">Dérangement par les touristes, introduction d'espèces envahissantes et changements climatiques.</button>
+          <button class="btn-choice" onclick="checkSpecies(this, false, 's1')">La coupe à blanc des forêts boréales.</button>
+        </div>
+      </div>
+
+      <div class="mission-box">
+        <div class="mission-prompt" style="text-align:left;">2. 🐢 <b>Tortue marine</b> : Quelles sont les menaces directes sur son habitat ?</div>
+        <div class="options-list">
+          <button class="btn-choice" onclick="checkSpecies(this, false, 's2')">L'érosion des glaciers polaires.</button>
+          <button class="btn-choice" onclick="checkSpecies(this, true, 's2')">Pollution plastique, pêche excessive et perte des plages de ponte à cause de l'urbanisation côtière.</button>
+        </div>
+      </div>
+
+      <div class="mission-box">
+        <div class="mission-prompt" style="text-align:left;">3. 🪸 <b>Les Coraux</b> : Quel phénomène mondial provoque leur blanchissement et leur mort ?</div>
+        <div class="options-list">
+          <button class="btn-choice" onclick="checkSpecies(this, true, 's3')">Le réchauffement climatique qui rend l'eau de la mer trop chaude.</button>
+          <button class="btn-choice" onclick="checkSpecies(this, false, 's3')">L'obscurité causée par l'hiver polaire.</button>
+        </div>
+      </div>
+
+      <div class="mission-box">
+        <div class="mission-prompt" style="text-align:left;">4. 🦍 <b>Gorille de montagne (Kahuzi-Biega)</b> : Quelles sont ses principales menaces ?</div>
+        <div class="options-list">
+          <button class="btn-choice" onclick="checkSpecies(this, true, 's4')">Le braconnage illégal, la destruction de son habitat forestier et les conflits armés.</button>
+          <button class="btn-choice" onclick="checkSpecies(this, false, 's4')">Le surpâturage par les vaches marines.</button>
+        </div>
+      </div>
+
+      <div id="fb-step2" class="feedback"></div>
+      <button id="btn-next2" class="btn-action hidden" onclick="startStep3()">Passer aux Gestes du Visiteur ➔</button>
+    </div>
+
+    <!-- MISSION 3 : QUE POUVONS-NOUS FAIRE ? -->
+    <div id="step-3" class="hidden">
+      <div class="step-tag">Mission 3 sur 3 : Code d'Éthique en Parc</div>
+      <h2>Que Pouvons-nous Faire ? 🥾🌲</h2>
+      <p class="instructions">Identifie le comportement responsable à adopter lors d'une visite :</p>
+
+      <div class="mission-box">
+        <div class="mission-prompt" style="text-align:left;">En randonnée dans un parc, pourquoi est-il obligatoire de <b>rester dans les sentiers</b> ?</div>
+        <div class="options-list">
+          <button class="btn-choice" onclick="checkAction(this, true, 'a1')">Pour éviter le piétinement de la flore fragile et limiter l'érosion du sol.</button>
+          <button class="btn-choice" onclick="checkAction(this, false, 'a1')">Pour ne pas salir ses chaussures de marche.</button>
+        </div>
+      </div>
+
+      <div class="mission-box">
+        <div class="mission-prompt" style="text-align:left;">Pourquoi est-il strictement interdit de <b>nourrir les animaux sauvages</b> ?</div>
+        <div class="options-list">
+          <button class="btn-choice" onclick="checkAction(this, false, 'a2')">Parce que la nourriture coûte trop cher.</button>
+          <button class="btn-choice" onclick="checkAction(this, true, 'a2')">Pour ne pas altérer leur régime naturel, éviter les maladies et ne pas les rendre dépendants de l'humain.</button>
+        </div>
+      </div>
+
+      <div id="fb-step3" class="feedback"></div>
+      <button id="btn-finish" class="btn-action hidden" onclick="showFinal()">Terminer le Grand Défi Fiche 8 🏆</button>
+    </div>
+
+    <!-- ÉCRAN DE FIN -->
+    <div id="step-final" class="hidden" style="text-align:center; padding:20px 0;">
+      <div style="font-size:3.5rem;">🌟</div>
+      <h2 style="color:var(--accent); font-size:1.8rem; margin:10px 0;">Félicitations Coco ! Gardienne Écoresponsable !</h2>
+      <p style="color:#475569; font-size:1.1rem; margin-bottom:20px;">
+        Tu connais maintenant sur le bout des doigts les menaces mondiales, les parcs en péril et tous les bons gestes pour protéger notre planète !
+      </p>
+      <a href="index.html" class="btn-action" style="display:inline-block; text-decoration:none;">Retour au menu</a>
+    </div>
+
+  </div>
+
+  <script>
+    let score = 0;
+
+    // Diagnostic Parcs Étape 1
+    const parkScenarios = [
+      {
+        prompt: "Menaces : Pollution de l'eau, urbanisation galopante et invasion d'espèces exotiques comme le python birman. Conséquence : dégradation de la zone humide et diminution de la faune.",
+        answer: "EVERGLADES"
+      },
+      {
+        prompt: "Menaces : Braconnage illégal, exploitation minière de minerais précieux et conflits armés. Conséquence : disparition dramatique des gorilles et destruction de la forêt.",
+        answer: "KAHUZI"
+      },
+      {
+        prompt: "Menace principale : L'élévation de la température de l'eau causée par le réchauffement climatique. Conséquence : blanchissement massif des coraux et perte de poissons.",
+        answer: "CORAIL"
+      },
+      {
+        prompt: "Menaces : Déforestation massive pour l'agriculture, création de routes et exploitation minière. Conséquence : fragmentation immense des forêts et disparition d'espèces.",
+        answer: "AMAZONE"
+      }
+    ];
+    let currentParkIndex = 0;
+
+    function displayParkScenario() {
+      const s = parkScenarios[currentParkIndex];
+      document.getElementById('park-prompt').innerText = s.prompt;
+      document.getElementById('fb-step1').innerText = "";
+    }
+
+    function checkPark(selected) {
+      const s = parkScenarios[currentParkIndex];
+      const fb = document.getElementById('fb-step1');
+
+      if (selected === s.answer) {
+        score += 2;
+        document.getElementById('score').innerText = score;
+        fb.innerHTML = "<span style='color: var(--accent);'>Exactement ! Bon diagnostic du parc ! (+2 pts)</span>";
+        currentParkIndex++;
+
+        setTimeout(() => {
+          if (currentParkIndex < parkScenarios.length) {
+            displayParkScenario();
+          } else {
+            fb.innerHTML = "<span style='color: var(--accent);'>Bravo ! Les 4 parcs en difficulté ont été identifiés !</span>";
+            document.getElementById('btn-next1').classList.remove('hidden');
+          }
+        }, 700);
+      } else {
+        fb.innerHTML = "<span style='color: var(--danger);'>Mauvais diagnostic. Relis bien les menaces et le continent !</span>";
+      }
+    }
+
+    // Étape 2 : Espèces
+    let speciesDone = {};
+    function startStep2() {
+      document.getElementById('step-1').classList.add('hidden');
+      document.getElementById('step-2').classList.remove('hidden');
+    }
+
+    function checkSpecies(btn, isCorrect, key) {
+      if (speciesDone[key]) return;
+      if (isCorrect) {
+        speciesDone[key] = true;
+        btn.classList.add('correct');
+        score += 2;
+        document.getElementById('score').innerText = score;
+      } else {
+        btn.classList.add('wrong');
+        setTimeout(() => btn.classList.remove('wrong'), 700);
+        return;
+      }
+
+      if (speciesDone.s1 && speciesDone.s2 && speciesDone.s3 && speciesDone.s4) {
+        document.getElementById('fb-step2').innerHTML = "<span style='color: var(--accent);'>Impressionnant ! Toutes les espèces en danger sont identifiées !</span>";
+        document.getElementById('btn-next2').classList.remove('hidden');
+      }
+    }
+
+    // Étape 3 : Gestes
+    let actionDone = {};
+    function startStep3() {
+      document.getElementById('step-2').classList.add('hidden');
+      document.getElementById('step-3').classList.remove('hidden');
+    }
+
+    function checkAction(btn, isCorrect, key) {
+      if (actionDone[key]) return;
+      if (isCorrect) {
+        actionDone[key] = true;
+        btn.classList.add('correct');
+        score += 2;
+        document.getElementById('score').innerText = score;
+      } else {
+        btn.classList.add('wrong');
+        setTimeout(() => btn.classList.remove('wrong'), 700);
+        return;
+      }
+
+      if (actionDone.a1 && actionDone.a2) {
+        document.getElementById('fb-step3').innerHTML = "<span style='color: var(--accent);'>Comportement exemplaire ! Tu as réussi tout le test !</span>";
+        document.getElementById('btn-finish').classList.remove('hidden');
+      }
+    }
+
+    function showFinal() {
+      document.getElementById('step-3').classList.add('hidden');
+      document.getElementById('step-final').classList.remove('hidden');
+    }
+
+    displayParkScenario();
+  </script>
+</body>
+</html>
