@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mission Garde-Parc Extrême</title>
+  <style>
+    :root {
+      --primary: #0284c7; --primary-dark: #0369a1;
+      --success: #16a34a; --danger: #dc2626;
+      --bg: #f0f9ff; --card: #ffffff;
+      --text: #0f172a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+    
+    .game-container {
+      background: var(--card); border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      width: 100%; max-width: 850px; padding: 30px; position: relative; overflow: hidden;
+    }
+    
+    .header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #e2e8f0; }
+    h1 { color: var(--primary-dark); font-size: 2rem; margin-bottom: 10px; }
+    .subtitle { font-size: 1.1rem; color: #475569; font-weight: 500; }
+
+    /* Jauges pour la simulation */
+    .dashboard { display: none; justify-content: space-between; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 2px solid #cbd5e1; }
+    .jauge-box { width: 45%; }
+    .jauge-label { font-weight: bold; margin-bottom: 5px; display: flex; justify-content: space-between; }
+    .jauge-bg { background: #e2e8f0; height: 16px; border-radius: 8px; overflow: hidden; }
+    .jauge-fill { height: 100%; transition: width 0.5s ease, background-color 0.5s ease; }
+    #jauge-bio { background-color: var(--success); width: 100%; }
+    #jauge-tour { background-color: var(--primary); width: 50%; }
+
+    /* Zones de jeu */
+    .phase-container { display: none; animation: fadeIn 0.5s ease; }
+    .active-phase { display: block; }
+    
+    .question-box { font-size: 1.3rem; font-weight: bold; margin-bottom: 20px; color: #1e293b; line-height: 1.4; }
+    
+    .options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px; }
+    .btn-option {
+      background: white; border: 2px solid #cbd5e1; border-radius: 10px; padding: 15px;
+      font-size: 1.1rem; font-weight: 600; text-align: left; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-option:hover { border-color: var(--primary); background: #f0f9ff; transform: translateY(-2px); }
+    
+    .feedback { display: none; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-weight: 500; font-size: 1.1rem; }
+    .fb-correct { background: #dcfce7; border-left: 5px solid var(--success); color: #166534; }
+    .fb-wrong { background: #fee2e2; border-left: 5px solid var(--danger); color: #991b1b; }
+
+    .btn-next {
+      display: none; width: 100%; background: var(--primary); color: white; border: none;
+      padding: 15px; font-size: 1.2rem; font-weight: bold; border-radius: 10px; cursor: pointer;
+    }
+    .btn-next:hover { background: var(--primary-dark); }
+
+    .intro-screen { text-align: center; }
+    .btn-start { background: var(--success); color: white; padding: 15px 30px; font-size: 1.3rem; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <div class="game-container">
+    <div class="header">
+      <h1>🌍 Mission Garde-Parc Extrême</h1>
+      <div class="subtitle" id="phase-title">Examen d'entrée pour la protection des parcs</div>
+    </div>
+
+    <!-- Jauges (Visibles seulement dans la Phase 3) -->
+    <div class="dashboard" id="dashboard">
+      <div class="jauge-box">
+        <div class="jauge-label"><span>🌱 Biodiversité</span> <span id="bio-val">100%</span></div>
+        <div class="jauge-bg"><div class="jauge-fill" id="jauge-bio"></div></div>
+      </div>
+      <div class="jauge-box">
+        <div class="jauge-label"><span>📸 Tourisme & Économie</span> <span id="tour-val">50%</span></div>
+        <div class="jauge-bg"><div class="jauge-fill" id="jauge-tour"></div></div>
+      </div>
+    </div>
+
+    <!-- Écran d'accueil -->
+    <div id="intro" class="phase-container active-phase intro-screen">
+      <p style="font-size: 1.2rem; margin-bottom: 20px; line-height: 1.6;">
+        Bienvenue recrue ! Pour obtenir ton diplôme de Garde-Parc, tu dois traverser 3 épreuves :<br><br>
+        <strong>Phase 1 :</strong> L'Académie (Connaissances mondiales)<br>
+        <strong>Phase 2 :</strong> Le Labo de Darwin (L'évolution aux Galápagos)<br>
+        <strong>Phase 3 :</strong> Le Terrain (Gérer une journée aux Galápagos sans détruire l'écosystème !)
+      </p>
+      <button class="btn-start" onclick="startPhase1()">Commencer l'examen 🚀</button>
+    </div>
+
+    <!-- Zone de jeu principale -->
+    <div id="game-area" class="phase-container">
+      <div class="question-box" id="question-text"></div>
+      <div class="options-grid" id="options"></div>
+      <div id="feedback" class="feedback"></div>
+      <button id="btn-next" class="btn-next" onclick="nextStep()">Continuer ➔</button>
+    </div>
+
+    <!-- Écran final -->
+    <div id="end-screen" class="phase-container intro-screen">
+      <h2 style="font-size: 2.5rem; color: var(--success); margin-bottom: 20px;">🎓 Diplôme Obtenu !</h2>
+      <p id="end-msg" style="font-size: 1.3rem; line-height: 1.6; margin-bottom: 30px;"></p>
+      <button class="btn-start" onclick="location.reload()">Rejouer l'aventure 🔄</button>
+      <br><br>
+      <a href="index.html" style="color: var(--primary); text-decoration: none; font-weight: bold;">Retour au menu principal</a>
+    </div>
+
+  </div>
+
+  <script>
+    // --- BASES DE DONNÉES DES ÉPREUVES ---
+
+    // Phase 1 : Académie (Les Organismes et Menaces)
+    const phase1Questions = [
+      {
+        q: "Quel organisme publie la célèbre Liste rouge des espèces menacées ?",
+        options: ["L'UNESCO", "L'UICN", "La Sépaq"],
+        answer: 1,
+        exp: "L'UICN évalue l'état de conservation de la nature et produit cette Liste rouge mondiale."
+      },
+      {
+        q: "Quelle grande menace d'origine humaine cause le 'blanchissement' de la Grande Barrière de corail ?",
+        options: ["Les conflits armés", "Le braconnage", "Les changements climatiques (réchauffement de l'eau)"],
+        answer: 2,
+        exp: "Le réchauffement climatique augmente la température des océans, ce qui stresse et tue les coraux."
+      },
+      {
+        q: "Le parc national de Kahuzi-Biega (Congo) abrite des gorilles de montagne. Quelles sont ses plus grandes menaces ?",
+        options: ["Les séismes et l'érosion", "Le braconnage et les conflits armés", "L'urbanisation massive"],
+        answer: 1,
+        exp: "La guerre et la chasse illégale (braconnage) déciment malheureusement les gorilles de ce parc."
+      }
+    ];
+
+    // Phase 2 : Darwin et les Galápagos
+    const phase2Questions = [
+      {
+        q: "Charles Darwin a remarqué que les pinsons des Galápagos étaient différents sur chaque île. Pourquoi ?",
+        options: ["Leur bec s'est adapté à la nourriture disponible sur leur île (évolution).", "Ils appartiennent tous à des familles d'oiseaux venues de continents différents.", "Les touristes les ont nourris différemment."],
+        answer: 0,
+        exp: "C'est la sélection naturelle ! Un pinson qui mange de grosses graines développera un bec épais, tandis qu'un pinson mangeant des insectes aura un bec fin."
+      },
+      {
+        q: "Une tortue géante avec une carapace très ouverte à l'avant (en forme de selle) et un très long cou vit probablement...",
+        options: ["Sur une île où l'herbe pousse au ras du sol.", "Sur une île aride où elle doit étirer son cou pour manger des feuilles en hauteur (ex: l'île Española).", "Dans l'océan avec l'iguane marin."],
+        answer: 1,
+        exp: "L'évolution a favorisé les tortues au long cou sur les îles où la végétation est haute, car elles seules pouvaient se nourrir !"
+      },
+      {
+        q: "Quel pourcentage du territoire terrestre des îles Galápagos est protégé en tant que parc national ?",
+        options: ["Environ 50%", "100%", "97%"],
+        answer: 2,
+        exp: "97 % du territoire est protégé ! Les 3 % restants sont les zones habitées par les 29 000 résidents."
+      }
+    ];
+
+    // Phase 3 : Simulateur (Impact sur les jauges Bio et Tourisme)
+    const phase3Scenarios = [
+      {
+        q: "🚨 ALERTE : Un grand navire de croisière demande à débarquer 200 touristes sur l'île Fernandina sans guide naturaliste.",
+        options: [
+          { text: "Accepter pour booster l'économie locale.", bio: -30, tour: +30, exp: "Catastrophe ! Sans guide ni respect des sentiers, les nids d'iguanes ont été piétinés." },
+          { text: "Refuser l'accès. Le règlement exige un guide autorisé et des groupes limités.", bio: +10, tour: -10, exp: "Excellente décision. Les règles du parc limitent le nombre de visiteurs et rendent le guide obligatoire." }
+        ]
+      },
+      {
+        q: "🚨 ALERTE : Vous apercevez des chèvres sauvages (espèce envahissante) sur l'île Isabela.",
+        options: [
+          { text: "Organiser une mission pour capturer ou éradiquer les chèvres.", bio: +20, tour: 0, exp: "Bien joué ! Les espèces envahissantes détruisent la végétation dont dépendent les tortues géantes endémiques." },
+          { text: "Laisser faire la nature, les chèvres ont le droit de vivre.", bio: -40, tour: 0, exp: "Erreur fatale. Les chèvres mangent toute la nourriture et menacent de faire disparaître les espèces uniques de l'île." }
+        ]
+      },
+      {
+        q: "🚨 ALERTE : Des touristes veulent nourrir les Fous à pieds bleus avec des morceaux de pain.",
+        options: [
+          { text: "Autoriser avec modération pour satisfaire les visiteurs.", bio: -25, tour: +10, exp: "Règle d'or brisée ! Il ne faut JAMAIS nourrir, toucher ou déranger les animaux dans le parc." },
+          { text: "Intervenir fermement et rappeler la consigne 'Ne pas nourrir'.", bio: +15, tour: 0, exp: "Parfait. Nourrir les animaux sauvages modifie leur comportement et peut les rendre malades." }
+        ]
+      }
+    ];
+
+    // Variables d'état
+    let currentPhase = 0; // 1, 2, 3
+    let currentQ = 0;
+    let bioScore = 100;
+    let tourScore = 50;
+    let hasAnswered = false;
+
+    // Utilitaires de sélection HTML
+    const introEl = document.getElementById('intro');
+    const gameArea = document.getElementById('game-area');
+    const endScreen = document.getElementById('end-screen');
+    const phaseTitle = document.getElementById('phase-title');
+    const qText = document.getElementById('question-text');
+    const optionsGrid = document.getElementById('options');
+    const feedbackEl = document.getElementById('feedback');
+    const btnNext = document.getElementById('btn-next');
+    const dashboard = document.getElementById('dashboard');
+
+    function startPhase1() {
+      currentPhase = 1; currentQ = 0;
+      introEl.classList.remove('active-phase');
+      gameArea.classList.add('active-phase');
+      phaseTitle.innerText = "Phase 1 : L'Académie (Acteurs & Menaces)";
+      loadQuestion();
+    }
+
+    function startPhase2() {
+      currentPhase = 2; currentQ = 0;
+      phaseTitle.innerText = "Phase 2 : Le Labo de Darwin (Évolution & Espèces)";
+      loadQuestion();
+    }
+
+    function startPhase3() {
+      currentPhase = 3; currentQ = 0;
+      phaseTitle.innerText = "Phase 3 : Terrain (Garde-Parc en Action !)";
+      dashboard.style.display = 'flex'; // Afficher les jauges
+      loadQuestion();
+    }
+
+    function updateJauges() {
+      if (bioScore > 100) bioScore = 100; if (bioScore < 0) bioScore = 0;
+      if (tourScore > 100) tourScore = 100; if (tourScore < 0) tourScore = 0;
+      
+      document.getElementById('jauge-bio').style.width = bioScore + '%';
+      document.getElementById('bio-val').innerText = bioScore + '%';
+      
+      document.getElementById('jauge-tour').style.width = tourScore + '%';
+      document.getElementById('tour-val').innerText = tourScore + '%';
+
+      // Couleurs dynamiques
+      document.getElementById('jauge-bio').style.backgroundColor = bioScore < 40 ? "var(--danger)" : "var(--success)";
+    }
+
+    function loadQuestion() {
+      hasAnswered = false;
+      feedbackEl.style.display = 'none';
+      btnNext.style.display = 'none';
+      optionsGrid.innerHTML = '';
+
+      let qData;
+      if (currentPhase === 1) qData = phase1Questions[currentQ];
+      else if (currentPhase === 2) qData = phase2Questions[currentQ];
+      else qData = phase3Scenarios[currentQ];
+
+      qText.innerText = qData.q;
+
+      qData.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-option';
+        // Si on est en phase 3, opt est un objet. Sinon c'est un texte.
+        btn.innerText = currentPhase === 3 ? opt.text : opt;
+        btn.onclick = () => handleAnswer(index, btn, qData);
+        optionsGrid.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(selectedIndex, btnClicked, qData) {
+      if (hasAnswered) return;
+      hasAnswered = true;
+
+      const allBtns = document.querySelectorAll('.btn-option');
+      allBtns.forEach(b => b.style.pointerEvents = 'none');
+
+      feedbackEl.style.display = 'block';
+
+      if (currentPhase === 1 || currentPhase === 2) {
+        // Logique Quiz normal
+        if (selectedIndex === qData.answer) {
+          btnClicked.style.borderColor = 'var(--success)'; btnClicked.style.backgroundColor = '#dcfce7';
+          feedbackEl.className = 'feedback fb-correct';
+          feedbackEl.innerHTML = "✅ <b>Bonne réponse !</b><br>" + qData.exp;
+        } else {
+          btnClicked.style.borderColor = 'var(--danger)'; btnClicked.style.backgroundColor = '#fee2e2';
+          feedbackEl.className = 'feedback fb-wrong';
+          feedbackEl.innerHTML = "❌ <b>Attention...</b><br>" + qData.exp;
+        }
+      } else if (currentPhase === 3) {
+        // Logique Simulateur
+        const choice = qData.options[selectedIndex];
+        bioScore += choice.bio;
+        tourScore += choice.tour;
+        updateJauges();
+
+        if (choice.bio > 0) {
+          feedbackEl.className = 'feedback fb-correct';
+          feedbackEl.innerHTML = "✅ <b>Décision protectrice !</b><br>" + choice.exp;
+        } else {
+          feedbackEl.className = 'feedback fb-wrong';
+          feedbackEl.innerHTML = "⚠️ <b>Alerte Écosystème !</b><br>" + choice.exp;
+        }
+
+        if (bioScore <= 0) {
+          feedbackEl.innerHTML += "<br><br><b>GAME OVER :</b> La biodiversité des Galápagos a été détruite sous votre gestion.";
+          btnNext.innerText = "Recommencer la simulation";
+          btnNext.style.display = 'block';
+          return; // Stoppe la progression normale
+        }
+      }
+
+      btnNext.style.display = 'block';
+    }
+
+    function nextStep() {
+      // Si Game Over en phase 3
+      if (currentPhase === 3 && bioScore <= 0) {
+        location.reload(); return;
+      }
+
+      currentQ++;
+      let maxQ = currentPhase === 1 ? phase1Questions.length : (currentPhase === 2 ? phase2Questions.length : phase3Scenarios.length);
+
+      if (currentQ < maxQ) {
+        loadQuestion();
+      } else {
+        // Passer à la phase suivante
+        if (currentPhase === 1) startPhase2();
+        else if (currentPhase === 2) startPhase3();
+        else showEndScreen();
+      }
+    }
+
+    function showEndScreen() {
+      gameArea.classList.remove('active-phase');
+      dashboard.style.display = 'none';
+      endScreen.classList.add('active-phase');
+      
+      let msg = `Mission accomplie !<br>Tu as protégé les Galápagos tout en maintenant un tourisme responsable.<br><br><b>Score Biodiversité Final : ${bioScore}%</b>`;
+      document.getElementById('end-msg').innerHTML = msg;
+    }
+  </script>
+</body>
+</html>
