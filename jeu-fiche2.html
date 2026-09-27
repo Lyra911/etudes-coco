@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jeu 2 : Les Îles Galápagos</title>
+  <title>Mission Galápagos : Les îles enchantées</title>
   <style>
     :root {
-      --primary: #0D9488;
-      --primary-dark: #0F766E;
-      --success: #16A34A;
-      --danger: #DC2626;
-      --bg: #F0FDFA;
-      --card: #FFFFFF;
-      --text: #1E293B;
-      --border: #CCFBF1;
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --accent: #10b981;
+      --bg: #f0fdf4;
+      --card: #ffffff;
+      --text: #1e293b;
+      --border: #e2e8f0;
+      --wrong: #ef4444;
     }
 
     * {
@@ -36,352 +36,439 @@
     .container {
       background: var(--card);
       border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
       width: 100%;
-      max-width: 740px;
+      max-width: 900px;
       padding: 24px;
-      text-align: center;
     }
 
-    .header-bar {
+    .top-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .btn-nav {
-      background: #F1F5F9;
+      background: #f1f5f9;
       color: var(--text);
-      border: 1px solid #CBD5E1;
+      border: 1px solid var(--border);
       border-radius: 8px;
       padding: 8px 14px;
       font-weight: 600;
-      text-decoration: none;
       cursor: pointer;
+      text-decoration: none;
       font-size: 0.9rem;
     }
-    .btn-nav:hover { background: #E2E8F0; }
+    .btn-nav:hover { background: #e2e8f0; }
 
     .score-badge {
-      background: #CCFBF1;
-      color: var(--primary-dark);
-      border: 1px solid #99F6E4;
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
       padding: 6px 14px;
       border-radius: 20px;
       font-weight: bold;
+      font-size: 1rem;
     }
 
     .step-indicator {
-      font-size: 0.85rem;
-      color: var(--primary-dark);
-      font-weight: bold;
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--primary);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 1px;
       margin-bottom: 6px;
     }
 
     h2 {
-      color: var(--primary-dark);
-      margin-bottom: 10px;
-      font-size: 1.3rem;
+      text-align: center;
+      color: #0f172a;
+      margin-bottom: 8px;
+      font-size: 1.4rem;
     }
 
-    p.instruction {
-      font-size: 0.95rem;
-      color: #475569;
-      margin-bottom: 18px;
+    .instructions {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 20px;
+      font-size: 1rem;
     }
 
-    .banner-img-box {
-      margin-bottom: 18px;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid #E2E8F0;
-      background: #F8FAFC;
-    }
-
-    .banner-img-box img {
-      max-width: 100%;
-      max-height: 280px;
-      object-fit: contain;
-      display: block;
-      margin: 0 auto;
-    }
-
-    .match-columns {
+    /* Grille d'association */
+    .matching-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
+      gap: 20px;
       margin-bottom: 20px;
     }
 
-    .match-col {
+    @media (max-width: 650px) {
+      .matching-grid { grid-template-columns: 1fr; }
+    }
+
+    .column {
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
 
     .btn-item {
-      background: white;
-      border: 2px solid #E2E8F0;
+      background: #f8fafc;
+      border: 2px solid var(--border);
       border-radius: 12px;
       padding: 10px;
-      font-size: 0.95rem;
-      font-weight: 600;
       cursor: pointer;
-      min-height: 56px;
+      text-align: center;
+      transition: all 0.2s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      text-align: center;
-      gap: 6px;
-      transition: all 0.15s ease;
-    }
-
-    .btn-item img {
-      width: 100%;
-      height: 85px;
-      object-fit: cover;
-      border-radius: 8px;
+      min-height: 70px;
+      font-size: 0.95rem;
+      font-weight: 600;
     }
 
     .btn-item:hover {
       border-color: var(--primary);
-      background: #F0FDFA;
+      background: #f0f9ff;
+    }
+
+    /* Images entièrement visibles sans rognage */
+    .btn-item img {
+      width: 100%;
+      height: 140px;
+      object-fit: contain;
+      background-color: #f8fafc;
+      border-radius: 8px;
+      margin-bottom: 8px;
     }
 
     .btn-item.selected {
-      border-color: var(--primary);
-      background: #CCFBF1;
-      box-shadow: 0 0 0 2px var(--primary);
+      border-color: #0ea5e9;
+      background: #e0f2fe;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.3);
     }
 
     .btn-item.matched {
-      background: #DCFCE7 !important;
-      border-color: var(--success) !important;
-      color: #14532D !important;
+      border-color: var(--accent) !important;
+      background: #d1fae5 !important;
+      color: #065f46 !important;
       cursor: default;
-    }
-
-    .btn-item.matched img {
       opacity: 0.85;
+      pointer-events: none;
     }
 
-    .feedback {
-      min-height: 38px;
+    .btn-item.error {
+      border-color: var(--wrong) !important;
+      background: #fee2e2 !important;
+      animation: shake 0.35s;
+    }
+
+    /* Questionnaire / QCM */
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .btn-quiz {
+      background: #f8fafc;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 1rem;
       font-weight: 600;
-      margin-top: 10px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
-    .btn-next-step {
-      background: var(--primary);
+    .btn-quiz:hover {
+      border-color: var(--primary);
+      background: #f0f9ff;
+    }
+
+    .btn-quiz.correct {
+      border-color: var(--accent);
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .btn-quiz.wrong {
+      border-color: var(--wrong);
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    /* Feedback */
+    .feedback-box {
+      text-align: center;
+      min-height: 28px;
+      font-weight: bold;
+      margin-top: 14px;
+      font-size: 1.05rem;
+    }
+
+    .btn-next {
+      display: block;
+      margin: 16px auto 0 auto;
+      background: var(--accent);
       color: white;
       border: none;
-      border-radius: 10px;
-      padding: 12px 24px;
-      font-size: 1rem;
+      padding: 12px 28px;
+      font-size: 1.05rem;
       font-weight: bold;
+      border-radius: 25px;
       cursor: pointer;
-      margin-top: 10px;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
     }
-    .btn-next-step:hover { background: var(--primary-dark); }
+    .btn-next:hover { background: #059669; }
 
     .hidden { display: none !important; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <div class="header-bar">
-      <a href="index.html" class="btn-nav">⬅ Menu</a>
-      <span class="score-badge">Score : <span id="total-score">0</span> pts</span>
+    <div class="top-bar">
+      <a href="index.html" class="btn-nav">⬅ Menu principal</a>
+      <div class="score-badge">Étoiles : <span id="stars">0</span> ⭐</div>
     </div>
 
-    <!-- MISSION 1 : GÉOGRAPHIE DES GALÁPAGOS -->
+    <!-- ÉTAPE 1 : SITUATION & CARTE -->
     <div id="step-1">
       <div class="step-indicator">Mission 1 sur 3</div>
-      <h2>Localisation & Caractéristiques 🗺️</h2>
-      <p class="instruction">Observe la carte de l'archipel et associe chaque élément à sa définition :</p>
+      <h2>Où se trouvent les îles Galápagos ? 🧭</h2>
+      <p class="instructions">Regarde bien la carte et réponds à la question ci-dessous.</p>
       
-      <div class="banner-img-box">
-        <img src="carte-galapagos.jpg" alt="Carte des îles Galápagos">
+      <div style="text-align:center; margin-bottom: 16px;">
+        <img src="carte-galapagos.jpg" alt="Carte Galápagos" style="max-width: 100%; max-height: 320px; border-radius: 12px; border: 1px solid var(--border);">
       </div>
 
-      <div class="match-columns">
-        <div class="match-col" id="col-geo"></div>
-        <div class="match-col" id="col-geo-defs"></div>
+      <div class="quiz-options">
+        <button class="btn-quiz" onclick="checkQ1(this, false)">Dans l'océan Atlantique, près du Brésil</button>
+        <button class="btn-quiz" onclick="checkQ1(this, true)">Dans l'océan Pacifique, à 1 000 km de l'Équateur</button>
+        <button class="btn-quiz" onclick="checkQ1(this, false)">Dans la mer des Caraïbes</button>
       </div>
-      <div class="feedback" id="fb-1"></div>
-      <button id="btn-next-1" class="btn-next-step hidden" onclick="startStep2()">Passer à la mission 2 ➡</button>
+      <div id="feedback-1" class="feedback-box"></div>
+      <button id="next-1" class="btn-next hidden" onclick="goToStep(2)">Passer à la faune ➔</button>
     </div>
 
-    <!-- MISSION 2 : FAUNE ENDÉMIQUE (AVEC VRAIES PHOTOS) -->
+    <!-- ÉTAPE 2 : FAUNE EXCEPTIONNELLE (ASSOCIATION COMPLÈTE) -->
     <div id="step-2" class="hidden">
       <div class="step-indicator">Mission 2 sur 3</div>
-      <h2>La Faune Exceptionnelle 🦎🐧</h2>
-      <p class="instruction">Regarde les photos des animaux et associe chacun à sa particularité unique :</p>
-      
-      <div class="match-columns">
-        <div class="match-col" id="col-animals"></div>
-        <div class="match-col" id="col-animal-defs"></div>
+      <h2>La Faune Exceptionnelle 🦎🦤</h2>
+      <p class="instructions">Clique sur un animal à gauche, puis associe-le à sa particularité à droite.</p>
+
+      <div class="matching-grid">
+        <div class="column" id="col-animals"></div>
+        <div class="column" id="col-desc"></div>
       </div>
-      <div class="feedback" id="fb-2"></div>
-      <button id="btn-next-2" class="btn-next-step hidden" onclick="startStep3()">Passer à la mission 3 ➡</button>
+
+      <div id="feedback-2" class="feedback-box"></div>
+      <button id="next-2" class="btn-next hidden" onclick="goToStep(3)">Passer aux menaces et conservation ➔</button>
     </div>
 
-    <!-- MISSION 3 : MENACES ET GESTION DU PARC -->
+    <!-- ÉTAPE 3 : DÉFIS ET CONSERVATION -->
     <div id="step-3" class="hidden">
       <div class="step-indicator">Mission 3 sur 3</div>
-      <h2>Menaces & Protection de l'Archipel 🛡️</h2>
-      <p class="instruction">Associe chaque enjeu environnemental à sa conséquence ou à la solution mise en place :</p>
-      
-      <div class="match-columns">
-        <div class="match-col" id="col-threats"></div>
-        <div class="match-col" id="col-threat-defs"></div>
+      <h2>Protéger ce paradis fragile 🌿</h2>
+      <p class="instructions">Quelle est la plus grande menace humaine pour la faune indigène des Galápagos ?</p>
+
+      <div class="quiz-options">
+        <button class="btn-quiz" onclick="checkQ3(this, true)">L'introduction d'espèces envahissantes (chèvres, rats, chats)</button>
+        <button class="btn-quiz" onclick="checkQ3(this, false)">La construction de gratte-ciels sur toutes les îles</button>
+        <button class="btn-quiz" onclick="checkQ3(this, false)">Le manque de lumière du soleil</button>
       </div>
-      <div class="feedback" id="fb-3"></div>
-      <button id="btn-restart" class="btn-next-step hidden" onclick="location.reload()">Rejouer pour perfectionner son score 🔄</button>
+      <div id="feedback-3" class="feedback-box"></div>
+      <button id="next-3" class="btn-next hidden" onclick="showFinal()">Terminer la mission 🏆</button>
     </div>
+
+    <!-- ÉCRAN FINAL -->
+    <div id="step-final" class="hidden" style="text-align: center; padding: 20px 0;">
+      <h2 style="font-size: 2rem; color: var(--accent); margin-bottom: 12px;">🎉 Mission accomplie, Coco ! 🎉</h2>
+      <p style="font-size: 1.15rem; color: #475569; margin-bottom: 24px;">
+        Tu as exploré les îles Galápagos et maîtrisé la faune et les enjeux de conservation !
+      </p>
+      <a href="index.html" class="btn-next" style="display: inline-block; text-decoration: none;">Retour aux thèmes</a>
+    </div>
+
   </div>
 
   <script>
-    let totalScore = 0;
-
-    function addScore(pts) {
-      totalScore += pts;
-      document.getElementById('total-score').innerText = totalScore;
+    let stars = 0;
+    function addStar() {
+      stars++;
+      document.getElementById('stars').innerText = stars;
     }
 
-    // --- MISSION 1 DATA ---
-    const geoData = [
-      { id: "g1", name: "Pays responsable", match: "gd1" },
-      { id: "g2", name: "Océan Pacifique", match: "gd2" },
-      { id: "g3", name: "Origine volcanique", match: "gd3" },
-      { id: "g4", name: "Isolement géographique", match: "gd4" }
-    ];
-    const geoDefs = [
-      { id: "gd1", text: "L'Équateur (les îles forment une province de ce pays)" },
-      { id: "gd2", text: "L'océan dans lequel l'archipel se situe, à environ 1 000 km des côtes" },
-      { id: "gd3", text: "Îles formées par des volcans et des points chauds sous-marins" },
-      { id: "gd4", text: "A permis aux espèces d'évoluer de façon unique sans prédateurs" }
-    ];
-
-    // --- MISSION 2 DATA (avec vos photos déposées à la racine) ---
-    const animalData = [
-      { id: "a1", name: "Iguane marin", img: "iguane-marin.jpg", match: "ad1" },
-      { id: "a2", name: "Tortue géante", img: "tortue-geante.jpg", match: "ad2" },
-      { id: "a3", name: "Fou à pieds bleus", img: "fou-pieds-bleus.jpg", match: "ad3" },
-      { id: "a4", name: "Manchot des Galápagos", img: "manchot.jpg", match: "ad4" }
-    ];
-    const animalDefs = [
-      { id: "ad1", text: "Le seul lézard au monde capable de plonger dans l'océan pour brouter des algues" },
-      { id: "ad2", text: "Peut peser plus de 200 kg et vivre plus de 100 ans ; elle a donné son nom aux îles" },
-      { id: "ad3", text: "Oiseau de mer célèbre pour sa parade nuptiale où il lève fièrement ses pattes colorées" },
-      { id: "ad4", text: "La seule espèce de manchot vivant à l'état sauvage sur la ligne de l'Équateur" }
-    ];
-
-    // --- MISSION 3 DATA ---
-    const threatData = [
-      { id: "t1", name: "Espèces envahissantes (chèvres, rats)", match: "td1" },
-      { id: "t2", name: "Tourisme de masse", match: "td2" },
-      { id: "t3", name: "Pêche illégale", match: "td3" },
-      { id: "t4", name: "Parc national des Galápagos", match: "td4" }
-    ];
-    const threatDefs = [
-      { id: "td1", text: "Détruisent la végétation indigène et mangent les œufs des tortues" },
-      { id: "td2", text: "Risque de surfréquentation, pollution et perturbation des animaux" },
-      { id: "td3", text: "Menace les requins et la réserve marine protégée autour des îles" },
-      { id: "td4", text: "Protège 97 % du territoire terrestre et impose des règles strictes aux visiteurs" }
-    ];
-
-    // --- MOTEUR D'ASSOCIATION ---
-    function setupMatchGame(colAId, itemsA, colBId, itemsB, feedbackId, nextBtnId, onComplete) {
-      const colA = document.getElementById(colAId);
-      const colB = document.getElementById(colBId);
-      const fb = document.getElementById(feedbackId);
-      let selectedA = null;
-      let matchedCount = 0;
-
-      const shuffledB = [...itemsB].sort(() => Math.random() - 0.5);
-
-      itemsA.forEach(item => {
-        const btn = document.createElement('button');
-        btn.className = "btn-item";
-        btn.dataset.id = item.id;
-
-        if (item.img) {
-          const img = document.createElement('img');
-          img.src = item.img;
-          img.alt = item.name;
-          btn.appendChild(img);
-        }
-
-        const label = document.createElement('span');
-        label.innerText = item.name;
-        btn.appendChild(label);
-
-        btn.onclick = () => {
-          if (btn.classList.contains('matched')) return;
-          colA.querySelectorAll('.btn-item').forEach(b => b.classList.remove('selected'));
-          btn.classList.add('selected');
-          selectedA = item;
-          fb.innerText = "Choisis maintenant la bonne réponse dans la colonne de droite !";
-          fb.style.color = "#475569";
-        };
-        colA.appendChild(btn);
-      });
-
-      shuffledB.forEach(item => {
-        const btn = document.createElement('button');
-        btn.className = "btn-item";
-        btn.innerText = item.name || item.text;
-        btn.dataset.id = item.id;
-        btn.onclick = () => {
-          if (btn.classList.contains('matched') || !selectedA) return;
-
-          if (selectedA.match === item.id) {
-            addScore(10);
-            fb.innerHTML = "✅ Excellent match ! (+10 pts)";
-            fb.style.color = "var(--success)";
-
-            const btnA = colA.querySelector(`[data-id="${selectedA.id}"]`);
-            btnA.classList.remove('selected');
-            btnA.classList.add('matched');
-            btn.classList.add('matched');
-            selectedA = null;
-            matchedCount++;
-
-            if (matchedCount === itemsA.length) {
-              fb.innerHTML = "🎉 Mission terminée avec succès !";
-              document.getElementById(nextBtnId).classList.remove('hidden');
-              if (onComplete) onComplete();
-            }
-          } else {
-            fb.innerHTML = "❌ Mauvaise pioche, réessaie !";
-            fb.style.color = "var(--danger)";
-          }
-        };
-        colB.appendChild(btn);
-      });
-    }
-
-    // Lancement de la Mission 1
-    setupMatchGame("col-geo", geoData, "col-geo-defs", geoDefs, "fb-1", "btn-next-1");
-
-    function startStep2() {
+    function goToStep(num) {
       document.getElementById('step-1').classList.add('hidden');
-      document.getElementById('step-2').classList.remove('hidden');
-      setupMatchGame("col-animals", animalData, "col-animal-defs", animalDefs, "fb-2", "btn-next-2");
+      document.getElementById('step-2').classList.add('hidden');
+      document.getElementById('step-3').classList.add('hidden');
+      document.getElementById('step-final').classList.add('hidden');
+
+      if (num === 2) {
+        document.getElementById('step-2').classList.remove('hidden');
+        initMatchingGame();
+      } else if (num === 3) {
+        document.getElementById('step-3').classList.remove('hidden');
+      }
     }
 
-    function startStep3() {
-      document.getElementById('step-2').classList.add('hidden');
-      document.getElementById('step-3').classList.remove('hidden');
-      setupMatchGame("col-threats", threatData, "col-threat-defs", threatDefs, "fb-3", "btn-restart", () => {
-        document.getElementById('fb-3').innerHTML = "🏆 Bravo Coco ! Tu es devenue une experte des îles Galápagos !";
+    // --- MISSION 1 ---
+    let q1Answered = false;
+    function checkQ1(btn, isCorrect) {
+      if (q1Answered) return;
+      const fb = document.getElementById('feedback-1');
+      if (isCorrect) {
+        q1Answered = true;
+        btn.classList.add('correct');
+        fb.innerHTML = "<span style='color: var(--accent);'>Exactement ! C'est un archipel volcanique de l'Équateur dans l'océan Pacifique. +1 ⭐</span>";
+        addStar();
+        document.getElementById('next-1').classList.remove('hidden');
+      } else {
+        btn.classList.add('wrong');
+        fb.innerHTML = "<span style='color: var(--wrong);'>Oups ! Regarde bien la carte au-dessus.</span>";
+        setTimeout(() => btn.classList.remove('wrong'), 800);
+      }
+    }
+
+    // --- MISSION 2 : ASSOCIATION DES ANIMAUX ---
+    const animals = [
+      { id: "a1", name: "Iguane marin", img: "iguane-marin.jpg" },
+      { id: "a2", name: "Tortue géante", img: "tortue-geante.jpg" },
+      { id: "a3", name: "Fou à pieds bleus", img: "fou-pieds-bleus.jpg" },
+      { id: "a4", name: "Manchot des Galápagos", img: "manchot-galapagos.jpg" }
+    ];
+
+    const descriptions = [
+      { id: "d1", match: "a1", text: "Le seul lézard au monde capable de plonger dans l'océan pour brouter des algues" },
+      { id: "d2", match: "a2", text: "Peut peser plus de 200 kg et vivre plus de 100 ans ; elle a donné son nom aux îles" },
+      { id: "d3", match: "a3", text: "Oiseau de mer célèbre pour sa parade nuptiale où il lève fièrement ses pattes" },
+      { id: "d4", match: "a4", text: "La seule espèce de manchot vivant à l'état sauvage sur la ligne de l'Équateur" }
+    ];
+
+    let selectedAnimal = null;
+    let selectedDesc = null;
+    let matchedCount = 0;
+
+    function initMatchingGame() {
+      const colA = document.getElementById('col-animals');
+      const colD = document.getElementById('col-desc');
+      colA.innerHTML = "";
+      colD.innerHTML = "";
+
+      // Affichage animaux
+      animals.forEach(a => {
+        const el = document.createElement('div');
+        el.className = 'btn-item';
+        el.id = 'card-' + a.id;
+        el.innerHTML = `<img src="${a.img}" alt="${a.name}"><span>${a.name}</span>`;
+        el.onclick = () => selectAnimal(a.id, el);
+        colA.appendChild(el);
       });
+
+      // Mélange des descriptions
+      const shuffled = [...descriptions].sort(() => Math.random() - 0.5);
+      shuffled.forEach(d => {
+        const el = document.createElement('div');
+        el.className = 'btn-item';
+        el.id = 'card-' + d.id;
+        el.innerText = d.text;
+        el.onclick = () => selectDesc(d, el);
+        colD.appendChild(el);
+      });
+    }
+
+    function selectAnimal(id, el) {
+      if (el.classList.contains('matched')) return;
+      document.querySelectorAll('#col-animals .btn-item').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedAnimal = id;
+      checkPair();
+    }
+
+    function selectDesc(data, el) {
+      if (el.classList.contains('matched')) return;
+      document.querySelectorAll('#col-desc .btn-item').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedDesc = data;
+      checkPair();
+    }
+
+    function checkPair() {
+      if (!selectedAnimal || !selectedDesc) return;
+
+      const fb = document.getElementById('feedback-2');
+      const elA = document.getElementById('card-' + selectedAnimal);
+      const elD = document.getElementById('card-' + selectedDesc.id);
+
+      if (selectedDesc.match === selectedAnimal) {
+        elA.classList.remove('selected');
+        elD.classList.remove('selected');
+        elA.classList.add('matched');
+        elD.classList.add('matched');
+        
+        fb.innerHTML = "<span style='color: var(--accent);'>Bravo ! Excellente association ! ⭐</span>";
+        addStar();
+        matchedCount++;
+
+        selectedAnimal = null;
+        selectedDesc = null;
+
+        if (matchedCount === animals.length) {
+          fb.innerHTML = "<span style='color: var(--accent);'>Superbe ! Tu connais tous les animaux emblématiques !</span>";
+          document.getElementById('next-2').classList.remove('hidden');
+        }
+      } else {
+        elA.classList.add('error');
+        elD.classList.add('error');
+        fb.innerHTML = "<span style='color: var(--wrong);'>Mauvaise pioche, réessaie !</span>";
+
+        setTimeout(() => {
+          elA.classList.remove('error', 'selected');
+          elD.classList.remove('error', 'selected');
+          selectedAnimal = null;
+          selectedDesc = null;
+        }, 600);
+      }
+    }
+
+    // --- MISSION 3 ---
+    let q3Answered = false;
+    function checkQ3(btn, isCorrect) {
+      if (q3Answered) return;
+      const fb = document.getElementById('feedback-3');
+      if (isCorrect) {
+        q3Answered = true;
+        btn.classList.add('correct');
+        fb.innerHTML = "<span style='color: var(--accent);'>Exactement ! Les espèces introduites mangent la végétation et les œufs. +1 ⭐</span>";
+        addStar();
+        document.getElementById('next-3').classList.remove('hidden');
+      } else {
+        btn.classList.add('wrong');
+        fb.innerHTML = "<span style='color: var(--wrong);'>Ce n'est pas la menace principale observée par les scientifiques.</span>";
+        setTimeout(() => btn.classList.remove('wrong'), 800);
+      }
+    }
+
+    function showFinal() {
+      goToStep('final');
+      document.getElementById('step-final').classList.remove('hidden');
     }
   </script>
 </body>
