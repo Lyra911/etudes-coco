@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jeu 5 : Les Activités Touristiques aux Galápagos</title>
+  <style>
+    :root {
+      --primary: #0284c7;
+      --accent: #059669;
+      --warning: #d97706;
+      --wrong: #dc2626;
+      --bg: #f0fdf4;
+      --card: #ffffff;
+      --text: #1e293b;
+      --border: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 820px;
+      padding: 24px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+
+    .btn-nav {
+      background: #f1f5f9;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .btn-nav:hover { background: #e2e8f0; }
+
+    .score-badge {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 1rem;
+    }
+
+    .step-tag {
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #0f172a;
+      margin-bottom: 8px;
+      font-size: 1.35rem;
+    }
+
+    .instructions {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    /* Grille des activités */
+    .grid-activities {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .act-card {
+      background: #f8fafc;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .act-card:hover {
+      border-color: var(--primary);
+      background: #f0f9ff;
+    }
+
+    .act-card.selected {
+      background: #ecfdf5;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent);
+      color: #065f46;
+    }
+
+    /* Questions Cas d'étude */
+    .quiz-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .quiz-title {
+      font-weight: bold;
+      color: #0f172a;
+      margin-bottom: 10px;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .btn-opt {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+    .btn-opt:hover { border-color: var(--primary); }
+    .btn-opt.correct { background: #d1fae5; border-color: var(--accent); color: #065f46; }
+    .btn-opt.wrong { background: #fee2e2; border-color: var(--wrong); color: #991b1b; }
+
+    .btn-action {
+      display: block;
+      margin: 20px auto 0 auto;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      border-radius: 25px;
+      cursor: pointer;
+    }
+    .btn-action:hover { background: #047857; }
+
+    .feedback {
+      text-align: center;
+      margin-top: 14px;
+      font-weight: bold;
+      min-height: 28px;
+      font-size: 1rem;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="top-bar">
+      <a href="index.html" class="btn-nav">⬅ Menu principal</a>
+      <div class="score-badge">Points Tourisme Éco : <span id="score">0</span> ⭐</div>
+    </div>
+
+    <!-- ÉTAPE 1 : LES 4 ACTIVITÉS AUTORISÉES (PAGE 15 DU CAHIER) -->
+    <div id="step-1">
+      <div class="step-tag">Mission 1 sur 2 : Gestion des visiteurs</div>
+      <h2>Quelles activités autoriser aux Galápagos ? 🧭</h2>
+      <p class="instructions">
+        Pour ne pas nuire à l'environnement, seulement <b>quatre</b> de ces activités sont permises dans le parc et la réserve marine.<br>
+        Clique sur les <b>4 activités autorisées</b> :
+      </p>
+
+      <div class="grid-activities">
+        <div class="act-card" onclick="toggleAct(this, false)"><span>🦌</span> Chasse sportive</div>
+        <div class="act-card" onclick="toggleAct(this, true)"><span>🚣</span> Kayak de mer</div>
+        <div class="act-card" onclick="toggleAct(this, false)"><span>🏎️</span> Randonnée en VTT / Moto</div>
+        <div class="act-card" onclick="toggleAct(this, true)"><span>🤿</span> Plongée sous-marine</div>
+        <div class="act-card" onclick="toggleAct(this, false)"><span>⛳</span> Terrain de golf</div>
+        <div class="act-card" onclick="toggleAct(this, true)"><span>📸</span> Observation faune / flore</div>
+        <div class="act-card" onclick="toggleAct(this, false)"><span>🎢</span> Parc d'attractions</div>
+        <div class="act-card" onclick="toggleAct(this, true)"><span>🥾</span> Randonnée pédestre balisée</div>
+      </div>
+
+      <div id="fb-step1" class="feedback"></div>
+      <button class="btn-action" onclick="checkStep1()">Valider mes choix ➔</button>
+    </div>
+
+    <!-- ÉTAPE 2 : CONTRAINTES & IMPACT ÉCONOMIQUE (PAGES 13 ET 15) -->
+    <div id="step-2" class="hidden">
+      <div class="step-tag">Mission 2 sur 2 : Règlements & Économie</div>
+      <h2>Règles d'or & Retombées 🐢</h2>
+      <p class="instructions">Réponds aux questions basées sur les obligations des touristes et l'économie locale.</p>
+
+      <div class="quiz-box">
+        <div class="quiz-title">1. Quelle obligation stricte est imposée aux touristes qui visitent les sentiers protégés ?</div>
+        <div class="quiz-options">
+          <button class="btn-opt" onclick="answerQ(this, false, 'q1')">Ils doivent voyager seuls et sans lumière pour ne pas réveiller les iguanes.</button>
+          <button class="btn-opt" onclick="answerQ(this, true, 'q1')">Ils doivent obligatoirement être accompagnés par un guide naturaliste certifié par le parc.</button>
+          <button class="btn-opt" onclick="answerQ(this, false, 'q1')">Ils doivent porter un casque de protection contre les chutes de noix de coco.</button>
+        </div>
+      </div>
+
+      <div class="quiz-box">
+        <div class="quiz-title">2. Pour limiter l'impact sur les sites fragiles, quelle est la limite de personnes par groupe ?</div>
+        <div class="quiz-options">
+          <button class="btn-opt" onclick="answerQ(this, true, 'q2')">Les groupes sont limités à un maximum de 16 personnes par guide ou petit bateau.</button>
+          <button class="btn-opt" onclick="answerQ(this, false, 'q2')">On peut débarquer jusqu'à 500 personnes en même temps sur les plages.</button>
+        </div>
+      </div>
+
+      <div class="quiz-box">
+        <div class="quiz-title">3. Quels sont les deux grands avantages économiques du tourisme pour les habitants des Galápagos ?</div>
+        <div class="quiz-options">
+          <button class="btn-opt" onclick="answerQ(this, true, 'q3')">Il génère la plus grande part des revenus et fournit de nombreux emplois (hôtels, restaurants, guides).</button>
+          <button class="btn-opt" onclick="answerQ(this, false, 'q3')">Il permet d'ouvrir de grandes usines de fabrication de plastique sur les îles.</button>
+        </div>
+      </div>
+
+      <div id="fb-step2" class="feedback"></div>
+      <button id="btn-finish" class="btn-action hidden" onclick="showFinal()">Terminer le jeu 🏆</button>
+    </div>
+
+    <!-- ÉCRAN FINAL -->
+    <div id="step-final" class="hidden" style="text-align:center; padding:20px 0;">
+      <div style="font-size:3.5rem;">🎉</div>
+      <h2 style="color:var(--accent); font-size:1.8rem; margin:10px 0;">Bravo Coco ! Mission accomplie !</h2>
+      <p style="color:#475569; font-size:1.1rem; margin-bottom:20px;">
+        Tu connais par cœur les activités permises et les règles strictes qui protègent les Galápagos !
+      </p>
+      <a href="index.html" class="btn-action" style="display:inline-block; text-decoration:none;">Retour aux thèmes</a>
+    </div>
+
+  </div>
+
+  <script>
+    let score = 0;
+    let answeredQuestions = { q1: false, q2: false, q3: false };
+
+    function toggleAct(element, isAllowed) {
+      element.classList.toggle('selected');
+      element.dataset.allowed = isAllowed;
+    }
+
+    function checkStep1() {
+      const selected = document.querySelectorAll('.act-card.selected');
+      const fb = document.getElementById('fb-step1');
+
+      if (selected.length !== 4) {
+        fb.innerHTML = "<span style='color: var(--warning);'>Choisis exactement 4 activités autorisées !</span>";
+        return;
+      }
+
+      let allCorrect = true;
+      selected.forEach(card => {
+        if (card.dataset.allowed !== "true") allCorrect = false;
+      });
+
+      if (allCorrect) {
+        score += 4;
+        document.getElementById('score').innerText = score;
+        fb.innerHTML = "<span style='color: var(--accent);'>Bravo ! Le kayak, la plongée, l'observation et la randonnée sont bien les 4 activités permises ! +4 ⭐</span>";
+        setTimeout(() => {
+          document.getElementById('step-1').classList.add('hidden');
+          document.getElementById('step-2').classList.remove('hidden');
+        }, 1200);
+      } else {
+        fb.innerHTML = "<span style='color: var(--wrong);'>Certaines activités choisies sont interdites (trop bruyantes ou destructrices). Réessaie !</span>";
+      }
+    }
+
+    function answerQ(btn, isCorrect, qKey) {
+      if (answeredQuestions[qKey]) return;
+
+      if (isCorrect) {
+        answeredQuestions[qKey] = true;
+        btn.classList.add('correct');
+        score += 2;
+        document.getElementById('score').innerText = score;
+      } else {
+        btn.classList.add('wrong');
+        setTimeout(() => btn.classList.remove('wrong'), 700);
+      }
+
+      if (answeredQuestions.q1 && answeredQuestions.q2 && answeredQuestions.q3) {
+        document.getElementById('fb-step2').innerHTML = "<span style='color: var(--accent);'>Excellente maîtrise du sujet !</span>";
+        document.getElementById('btn-finish').classList.remove('hidden');
+      }
+    }
+
+    function showFinal() {
+      document.getElementById('step-2').classList.add('hidden');
+      document.getElementById('step-final').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
