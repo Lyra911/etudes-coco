@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Études de Coco</title>
+  <style>
+    :root {
+      --primary: #4A90E2;
+      --primary-hover: #357ABD;
+      --bg: #F0F4F8;
+      --card-bg: #FFFFFF;
+      --text: #2D3748;
+      --gray-light: #EDF2F7;
+      --border: #E2E8F0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    header {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .btn-nav {
+      background: var(--gray-light);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-nav:hover { background: #E2E8F0; }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+      width: 100%;
+      max-width: 600px;
+      padding: 30px;
+      text-align: center;
+    }
+
+    h1, h2 {
+      margin-bottom: 20px;
+      color: var(--primary);
+    }
+
+    p.subtitle {
+      color: #718096;
+      margin-bottom: 25px;
+      font-size: 0.95rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 320px;
+      margin: 0 auto;
+    }
+
+    input {
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 1rem;
+      outline: none;
+    }
+    input:focus { border-color: var(--primary); }
+
+    button.btn-main {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    button.btn-main:hover { background: var(--primary-hover); }
+
+    .toggle-auth {
+      margin-top: 15px;
+      font-size: 0.9rem;
+      color: var(--primary);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .btn-tile {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 10px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-tile:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #F8FAFC;
+      transform: translateY(-2px);
+    }
+
+    .theme-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .theme-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      padding: 14px 18px;
+      border-radius: 10px;
+    }
+
+    .theme-name {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <header id="top-nav" class="hidden">
+    <button id="btn-back" class="btn-nav" onclick="goBack()">⬅ Retour</button>
+    <button class="btn-nav" onclick="logout()">Déconnexion</button>
+  </header>
+
+  <div id="screen-auth" class="card">
+    <h1 id="auth-title">Connexion</h1>
+    <p class="subtitle">Espace d'étude de Coco</p>
+    <form class="form-group" onsubmit="handleAuth(event)">
+      <input type="text" id="username" placeholder="Nom d'utilisateur" required>
+      <input type="password" id="password" placeholder="Mot de passe" required>
+      <button type="submit" id="auth-btn" class="btn-main">Se connecter</button>
+    </form>
+    <p id="auth-toggle" class="toggle-auth" onclick="toggleAuth()">Pas de compte ? Créer un profil</p>
+  </div>
+
+  <div id="screen-levels" class="card hidden">
+    <h2>Choisis ton niveau</h2>
+    <p class="subtitle">Sélectionne ton année scolaire</p>
+    <div class="grid">
+      <button class="btn-tile" onclick="selectLevel('Secondaire 1')">Secondaire 1</button>
+      <button class="btn-tile" onclick="selectLevel('Secondaire 2')">Secondaire 2</button>
+      <button class="btn-tile" onclick="selectLevel('Secondaire 3')">Secondaire 3</button>
+      <button class="btn-tile" onclick="selectLevel('Secondaire 4')">Secondaire 4</button>
+      <button class="btn-tile" onclick="selectLevel('Secondaire 5')">Secondaire 5</button>
+    </div>
+  </div>
+
+  <div id="screen-subjects" class="card hidden">
+    <h2 id="subject-title">Matières</h2>
+    <p class="subtitle">Quelle matière veux-tu réviser ?</p>
+    <div class="grid" id="subjects-grid"></div>
+  </div>
+
+  <div id="screen-themes" class="card hidden">
+    <h2 id="theme-title">Thèmes</h2>
+    <p class="subtitle">Choisis le sujet de ton étude</p>
+    <div class="theme-list" id="themes-list"></div>
+  </div>
+
+  <script>
+    const matieres = [
+      "Géographie",
+      "Sciences & Biologie",
+      "Histoire",
+      "Mathématiques",
+      "Français"
+    ];
+
+    const themesParMatiere = {
+      "Géographie": [
+        "Territoire et provinces du Canada",
+        "Régions physiographiques",
+        "Les métropoles"
+      ],
+      "Sciences & Biologie": [
+        "La cellule végétale et animale",
+        "L'organisation du vivant",
+        "Photosynthèse et respiration"
+      ],
+      "Histoire": [
+        "La Nouvelle-France",
+        "Les premières nations",
+        "Le régime britannique"
+      ],
+      "Mathématiques": [
+        "Algèbre",
+        "Géométrie",
+        "Fractions"
+      ],
+      "Français": [
+        "Accords des verbes",
+        "Grammaire du texte",
+        "Vocabulaire"
+      ]
+    };
+
+    let isRegister = false;
+    let currentLevel = "";
+    let currentSubject = "";
+
+    function toggleAuth() {
+      isRegister = !isRegister;
+      document.getElementById('auth-title').innerText = isRegister ? "Créer un profil" : "Connexion";
+      document.getElementById('auth-btn').innerText = isRegister ? "S'inscrire" : "Se connecter";
+      document.getElementById('auth-toggle').innerText = isRegister ? "Déjà un profil ? Se connecter" : "Pas de compte ? Créer un profil";
+    }
+
+    function handleAuth(e) {
+      e.preventDefault();
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value.trim();
+      const users = JSON.parse(localStorage.getItem('etudes_users') || '{}');
+
+      if (isRegister) {
+        if (users[u]) return alert("Ce nom d'utilisateur est déjà pris !");
+        users[u] = p;
+        localStorage.setItem('etudes_users', JSON.stringify(users));
+        alert("Profil créé ! Vous pouvez maintenant vous connecter.");
+        toggleAuth();
+      } else {
+        if (users[u] && users[u] === p) {
+          showLevels();
+        } else {
+          alert("Nom d'utilisateur ou mot de passe incorrect.");
+        }
+      }
+    }
+
+    function logout() {
+      hideAll();
+      document.getElementById('top-nav').classList.add('hidden');
+      document.getElementById('screen-auth').classList.remove('hidden');
+      document.getElementById('username').value = "";
+      document.getElementById('password').value = "";
+    }
+
+    function hideAll() {
+      document.getElementById('screen-auth').classList.add('hidden');
+      document.getElementById('screen-levels').classList.add('hidden');
+      document.getElementById('screen-subjects').classList.add('hidden');
+      document.getElementById('screen-themes').classList.add('hidden');
+    }
+
+    function showLevels() {
+      hideAll();
+      document.getElementById('top-nav').classList.remove('hidden');
+      document.getElementById('btn-back').classList.add('hidden');
+      document.getElementById('screen-levels').classList.remove('hidden');
+    }
+
+    function selectLevel(level) {
+      currentLevel = level;
+      hideAll();
+      document.getElementById('btn-back').classList.remove('hidden');
+      document.getElementById('subject-title').innerText = `${level} : Matières`;
+
+      const grid = document.getElementById('subjects-grid');
+      grid.innerHTML = "";
+      matieres.forEach(m => {
+        const btn = document.createElement('button');
+        btn.className = "btn-tile";
+        btn.innerText = m;
+        btn.onclick = () => selectSubject(m);
+        grid.appendChild(btn);
+      });
+
+      document.getElementById('screen-subjects').classList.remove('hidden');
+    }
+
+    function selectSubject(subject) {
+      currentSubject = subject;
+      hideAll();
+      document.getElementById('theme-title').innerText = `${subject} (${currentLevel})`;
+
+      const list = document.getElementById('themes-list');
+      list.innerHTML = "";
+
+      const themes = themesParMatiere[subject] || [];
+      themes.forEach(t => {
+        const row = document.createElement('div');
+        row.className = "theme-item";
+        row.innerHTML = `
+          <span class="theme-name">${t}</span>
+          <button class="btn-nav" onclick="alert('Bientôt : fiches et jeux pour ${t} !')">Ouvrir ➜</button>
+        `;
+        list.appendChild(row);
+      });
+
+      document.getElementById('screen-themes').classList.remove('hidden');
+    }
+
+    function goBack() {
+      const onThemes = !document.getElementById('screen-themes').classList.contains('hidden');
+      const onSubjects = !document.getElementById('screen-subjects').classList.contains('hidden');
+
+      if (onThemes) {
+        selectLevel(currentLevel);
+      } else if (onSubjects) {
+        showLevels();
+      }
+    }
+  </script>
+</body>
+</html>
