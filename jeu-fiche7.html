@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jeu 7 : Les Acteurs du Patrimoine Mondial</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --accent: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --bg: #eef2ff;
+      --card: #ffffff;
+      --text: #1e293b;
+      --border: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 820px;
+      padding: 24px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+
+    .btn-nav {
+      background: #f1f5f9;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .btn-nav:hover { background: #e2e8f0; }
+
+    .score-badge {
+      background: #e0e7ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 1rem;
+    }
+
+    .step-tag {
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #0f172a;
+      margin-bottom: 8px;
+      font-size: 1.35rem;
+    }
+
+    .instructions {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    /* Grille des acteurs avec logos */
+    .actors-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .actor-card {
+      background: #f8fafc;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 140px;
+    }
+
+    .actor-card:hover {
+      border-color: var(--primary);
+      background: #eef2ff;
+      transform: translateY(-2px);
+    }
+
+    .actor-card img {
+      max-width: 100px;
+      max-height: 60px;
+      object-fit: contain;
+      margin-bottom: 10px;
+      border-radius: 4px;
+    }
+
+    .actor-card .fallback-icon {
+      font-size: 2.2rem;
+      margin-bottom: 6px;
+    }
+
+    .actor-card .title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #0f172a;
+    }
+
+    /* Cartes de missions et quiz */
+    .mission-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .mission-prompt {
+      font-weight: bold;
+      color: #0f172a;
+      font-size: 1.05rem;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .btn-choice {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.15s;
+    }
+
+    .btn-choice:hover { border-color: var(--primary); }
+    .btn-choice.correct { background: #d1fae5; border-color: var(--accent); color: #065f46; }
+    .btn-choice.wrong { background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+
+    .btn-action {
+      display: block;
+      margin: 20px auto 0 auto;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 25px;
+      cursor: pointer;
+    }
+    .btn-action:hover { background: #4338ca; }
+
+    .feedback {
+      text-align: center;
+      margin-top: 14px;
+      font-weight: bold;
+      min-height: 28px;
+      font-size: 0.95rem;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="top-bar">
+      <a href="index.html" class="btn-nav">⬅ Menu principal</a>
+      <div class="score-badge">Points Conseil : <span id="score">0</span> 🏛️</div>
+    </div>
+
+    <!-- MISSION 1 : IDENTIFIER LES ACTEURS PAR LEURS LOGOS -->
+    <div id="step-1">
+      <div class="step-tag">Mission 1 sur 3 : Qui fait quoi ?</div>
+      <h2>Reconnaître les Organismes Protecteurs 🏛️🌿</h2>
+      <p class="instructions">Lis la mission officielle affichée, puis clique sur le bon logo :</p>
+
+      <div class="mission-box">
+        <div class="mission-prompt" id="actor-prompt">...</div>
+      </div>
+
+      <div class="actors-grid">
+        <div class="actor-card" onclick="checkActor('UNESCO')">
+          <img src="unesco.jpg" alt="UNESCO" onerror="this.onerror=null; this.src='unesco.png.jpg';">
+          <div class="title">UNESCO</div>
+        </div>
+
+        <div class="actor-card" onclick="checkActor('UICN')">
+          <img src="uicn.png" alt="UICN" onerror="this.onerror=null; this.src='uicn_2.png';">
+          <div class="title">UICN</div>
+        </div>
+
+        <div class="actor-card" onclick="checkActor('PC')">
+          <img src="parcs-canada.png" alt="Parcs Canada" onerror="this.onerror=null; this.src='parcs-canada_2.png';">
+          <div class="title">Parcs Canada</div>
+        </div>
+
+        <div class="actor-card" onclick="checkActor('SEPAQ')">
+          <img src="sepaq.png" alt="Sépaq" onerror="this.onerror=null; this.src='sepaq_2.png';">
+          <div class="title">Sépaq</div>
+        </div>
+      </div>
+
+      <div id="fb-step1" class="feedback"></div>
+      <button id="btn-next1" class="btn-action hidden" onclick="startStep2()">Passer aux 4 Critères UNESCO ➔</button>
+    </div>
+
+    <!-- MISSION 2 : LES 4 CRITÈRES DE L'UNESCO -->
+    <div id="step-2" class="hidden">
+      <div class="step-tag">Mission 2 sur 3 : Évaluation du Patrimoine Mondial</div>
+      <h2>Les 4 Critères de l'UNESCO 📜</h2>
+      <p class="instructions">Associe chaque caractéristique au critère officiel d'inscription :</p>
+
+      <div class="mission-box">
+        <div class="mission-prompt" style="text-align:left;">1. Des cratères de volcans actifs et des roches qui racontent l'histoire géologique de la formation de la Terre :</div>
+        <div class="options-list" style="margin-top:10px;">
+          <button class="btn-choice" onclick="checkCrit(this, true, 'c1')">Critère Géologique (Histoire de la Terre)</button>
+          <button class="btn-choice" onclick="checkCrit(this, false, 'c1')">Critère Esthétique (Beauté des paysages)</button>
+          <button class="btn-choice" onclick="checkCrit(this, false, 'c1')">Critère Économique</button>
+        </div>
+      </div>
+
+      <div class="mission-box">
+        <div class="mission-prompt" style="text-align:left;">2. Des espèces rares et endémiques qui témoignent de l'évolution de la vie sur Terre :</div>
+        <div class="options-list" style="margin-top:10px;">
+          <button class="btn-choice" onclick="checkCrit(this, false, 'c2')">Critère Géologique</button>
+          <button class="btn-choice" onclick="checkCrit(this, true, 'c2')">Critère Biologique (Évolution des espèces vivantes)</button>
+          <button class="btn-choice" onclick="checkCrit(this, false, 'c2')">Critère Esthétique</button>
+        </div>
+      </div>
+
+      <div class="mission-box">
+        <div class="mission-prompt" style="text-align:left;">3. Des panoramas terrestres et sous-marins d'une beauté naturelle exceptionnelle :</div>
+        <div class="options-list" style="margin-top:10px;">
+          <button class="btn-choice" onclick="checkCrit(this, true, 'c3')">Critère Esthétique (Beauté naturelle unique)</button>
+          <button class="btn-choice" onclick="checkCrit(this, false, 'c3')">Critère de Biodiversité</button>
+        </div>
+      </div>
+
+      <div id="fb-step2" class="feedback"></div>
+      <button id="btn-next2" class="btn-action hidden" onclick="startStep3()">Passer aux Sites en Péril ➔</button>
+    </div>
+
+    <!-- MISSION 3 : SITES EN PÉRIL -->
+    <div id="step-3" class="hidden">
+      <div class="step-tag">Mission 3 sur 3 : Intervention d'Urgence</div>
+      <h2>Patrimoine Mondial en Péril ⚠️</h2>
+      <p class="instructions">L'UNESCO identifie les sites menacés pour alerter la communauté internationale.</p>
+
+      <div class="mission-box">
+        <div class="mission-prompt" style="text-align:left;">Pourquoi l'UNESCO place-t-elle certains parcs sur la « Liste du patrimoine mondial en péril » ?</div>
+        <div class="options-list" style="margin-top:10px;">
+          <button class="btn-choice" onclick="checkPeril(this, false, 'p1')">Pour punir les pays et interdire l'accès à tous les humains.</button>
+          <button class="btn-choice" onclick="checkPeril(this, true, 'p1')">Pour signaler des dangers graves (guerres, braconnage, pollution) et mobiliser des fonds et de l'aide internationale d'urgence.</button>
+        </div>
+      </div>
+
+      <div class="mission-box">
+        <div class="mission-prompt" style="text-align:left;">Quel parc a été placé en péril en raison de la déforestation et du braconnage menaçant les gorilles ?</div>
+        <div class="options-list" style="margin-top:10px;">
+          <button class="btn-choice" onclick="checkPeril(this, true, 'p2')">Le Parc national de Kahuzi-Biega (République démocratique du Congo)</button>
+          <button class="btn-choice" onclick="checkPeril(this, false, 'p2')">Le Parc national Banff au Canada</button>
+        </div>
+      </div>
+
+      <div id="fb-step3" class="feedback"></div>
+      <button id="btn-finish" class="btn-action hidden" onclick="showFinal()">Terminer le Grand Défi 🏆</button>
+    </div>
+
+    <!-- ÉCRAN DE FIN -->
+    <div id="step-final" class="hidden" style="text-align:center; padding:20px 0;">
+      <div style="font-size:3.5rem;">🌟</div>
+      <h2 style="color:var(--accent); font-size:1.8rem; margin:10px 0;">Félicitations Coco ! Expert International certifié !</h2>
+      <p style="color:#475569; font-size:1.1rem; margin-bottom:20px;">
+        Tu as terminé tous les jeux avec succès ! Tu maîtrises les parcs, les animaux, les cartes, les règlements et les organismes mondiaux !
+      </p>
+      <a href="index.html" class="btn-action" style="display:inline-block; text-decoration:none;">Retour au menu</a>
+    </div>
+
+  </div>
+
+  <script>
+    let score = 0;
+
+    // Questions Étape 1 avec les 4 acteurs
+    const actorQuestions = [
+      { text: "Agence des Nations Unies qui gère la prestigieuse Liste du patrimoine mondial de l'humanité.", answer: "UNESCO" },
+      { text: "Union mondiale d'experts scientifiques qui évalue la nature et publie la Liste rouge des espèces menacées.", answer: "UICN" },
+      { text: "Agence gouvernementale fédérale qui gère les parcs nationaux partout au Canada (ex. Banff, Forillon).", answer: "PC" },
+      { text: "Société d'État responsable de la gestion et de la mise en valeur des parcs nationaux du Québec.", answer: "SEPAQ" }
+    ];
+    let currentActorIndex = 0;
+
+    function displayActorQuestion() {
+      const q = actorQuestions[currentActorIndex];
+      document.getElementById('actor-prompt').innerText = q.text;
+      document.getElementById('fb-step1').innerText = "";
+    }
+
+    function checkActor(selectedCode) {
+      const q = actorQuestions[currentActorIndex];
+      const fb = document.getElementById('fb-step1');
+
+      if (selectedCode === q.answer) {
+        score += 2;
+        document.getElementById('score').innerText = score;
+        fb.innerHTML = "<span style='color: var(--accent);'>Exactement ! Bon logo identifié ! (+2 pts)</span>";
+        currentActorIndex++;
+
+        setTimeout(() => {
+          if (currentActorIndex < actorQuestions.length) {
+            displayActorQuestion();
+          } else {
+            fb.innerHTML = "<span style='color: var(--accent);'>Bravo ! Tous les acteurs ont été parfaitement identifiés !</span>";
+            document.getElementById('btn-next1').classList.remove('hidden');
+          }
+        }, 700);
+      } else {
+        fb.innerHTML = "<span style='color: var(--danger);'>Ce n'est pas cet organisme. Regarde bien sa mission et son logo !</span>";
+      }
+    }
+
+    // Étape 2
+    let critDone = {};
+    function startStep2() {
+      document.getElementById('step-1').classList.add('hidden');
+      document.getElementById('step-2').classList.remove('hidden');
+    }
+
+    function checkCrit(btn, isCorrect, key) {
+      if (critDone[key]) return;
+      if (isCorrect) {
+        critDone[key] = true;
+        btn.classList.add('correct');
+        score += 2;
+        document.getElementById('score').innerText = score;
+      } else {
+        btn.classList.add('wrong');
+        setTimeout(() => btn.classList.remove('wrong'), 700);
+        return;
+      }
+
+      if (critDone.c1 && critDone.c2 && critDone.c3) {
+        document.getElementById('fb-step2').innerHTML = "<span style='color: var(--accent);'>Parfait ! Tu maîtrises les critères de l'UNESCO !</span>";
+        document.getElementById('btn-next2').classList.remove('hidden');
+      }
+    }
+
+    // Étape 3
+    let perilDone = {};
+    function startStep3() {
+      document.getElementById('step-2').classList.add('hidden');
+      document.getElementById('step-3').classList.remove('hidden');
+    }
+
+    function checkPeril(btn, isCorrect, key) {
+      if (perilDone[key]) return;
+      if (isCorrect) {
+        perilDone[key] = true;
+        btn.classList.add('correct');
+        score += 2;
+        document.getElementById('score').innerText = score;
+      } else {
+        btn.classList.add('wrong');
+        setTimeout(() => btn.classList.remove('wrong'), 700);
+        return;
+      }
+
+      if (perilDone.p1 && perilDone.p2) {
+        document.getElementById('fb-step3').innerHTML = "<span style='color: var(--accent);'>Excellent travail de synthèse ! Mission accomplie !</span>";
+        document.getElementById('btn-finish').classList.remove('hidden');
+      }
+    }
+
+    function showFinal() {
+      document.getElementById('step-3').classList.add('hidden');
+      document.getElementById('step-final').classList.remove('hidden');
+    }
+
+    // Initialisation
+    displayActorQuestion();
+  </script>
+</body>
+</html>
