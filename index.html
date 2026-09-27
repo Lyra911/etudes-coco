@@ -34,7 +34,7 @@
 
     header {
       width: 100%;
-      max-width: 600px;
+      max-width: 650px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -59,13 +59,13 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
       border: 1px solid var(--border);
       width: 100%;
-      max-width: 600px;
+      max-width: 650px;
       padding: 30px;
       text-align: center;
     }
 
     h1, h2 {
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       color: var(--primary);
     }
 
@@ -140,7 +140,7 @@
     .theme-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       text-align: left;
     }
 
@@ -159,16 +159,31 @@
       font-size: 1rem;
     }
 
+    .btn-play {
+      background: #48bb78;
+      color: white;
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      display: inline-block;
+    }
+    .btn-play:hover { background: #38a169; }
+
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
+  <!-- Navigation du haut -->
   <header id="top-nav" class="hidden">
     <button id="btn-back" class="btn-nav" onclick="goBack()">⬅ Retour</button>
+    <div id="user-greeting" style="font-weight:600; color:#718096; font-size:0.9rem;"></div>
     <button class="btn-nav" onclick="logout()">Déconnexion</button>
   </header>
 
+  <!-- 1. CONNEXION / INSCRIPTION -->
   <div id="screen-auth" class="card">
     <h1 id="auth-title">Connexion</h1>
     <p class="subtitle">Espace d'étude de Coco</p>
@@ -180,6 +195,7 @@
     <p id="auth-toggle" class="toggle-auth" onclick="toggleAuth()">Pas de compte ? Créer un profil</p>
   </div>
 
+  <!-- 2. CHOIX DU NIVEAU (Sec 1 à 5) -->
   <div id="screen-levels" class="card hidden">
     <h2>Choisis ton niveau</h2>
     <p class="subtitle">Sélectionne ton année scolaire</p>
@@ -192,12 +208,14 @@
     </div>
   </div>
 
+  <!-- 3. CHOIX DE LA MATIÈRE -->
   <div id="screen-subjects" class="card hidden">
     <h2 id="subject-title">Matières</h2>
     <p class="subtitle">Quelle matière veux-tu réviser ?</p>
     <div class="grid" id="subjects-grid"></div>
   </div>
 
+  <!-- 4. CHOIX DU THÈME & JEUX -->
   <div id="screen-themes" class="card hidden">
     <h2 id="theme-title">Thèmes</h2>
     <p class="subtitle">Choisis le sujet de ton étude</p>
@@ -213,37 +231,44 @@
       "Français"
     ];
 
+    // Ici on associe chaque thème à son jeu (canada.html est déjà relié !)
     const themesParMatiere = {
       "Géographie": [
-        "Territoire et provinces du Canada",
-        "Régions physiographiques",
-        "Les métropoles"
+        { name: "Territoire et provinces du Canada", link: "canada.html" },
+        { name: "Régions physiographiques", link: null },
+        { name: "Les métropoles", link: null }
       ],
       "Sciences & Biologie": [
-        "La cellule végétale et animale",
-        "L'organisation du vivant",
-        "Photosynthèse et respiration"
+        { name: "La cellule végétale et animale", link: null },
+        { name: "L'organisation du vivant", link: null },
+        { name: "Photosynthèse et respiration", link: null }
       ],
       "Histoire": [
-        "La Nouvelle-France",
-        "Les premières nations",
-        "Le régime britannique"
+        { name: "La Nouvelle-France", link: null },
+        { name: "Les premières nations", link: null }
       ],
       "Mathématiques": [
-        "Algèbre",
-        "Géométrie",
-        "Fractions"
+        { name: "Algèbre", link: null },
+        { name: "Géométrie", link: null }
       ],
       "Français": [
-        "Accords des verbes",
-        "Grammaire du texte",
-        "Vocabulaire"
+        { name: "Accords des verbes", link: null },
+        { name: "Grammaire", link: null }
       ]
     };
 
     let isRegister = false;
     let currentLevel = "";
     let currentSubject = "";
+
+    // --- VÉRIFICATION AUTOMATIQUE DE CONNEXION ---
+    window.addEventListener('load', function() {
+      const activeUser = localStorage.getItem('etudes_active_user');
+      if (activeUser) {
+        // Déjà connectée ! On saute la page de mot de passe
+        showLevels();
+      }
+    });
 
     function toggleAuth() {
       isRegister = !isRegister;
@@ -266,6 +291,8 @@
         toggleAuth();
       } else {
         if (users[u] && users[u] === p) {
+          // Sauvegarde la session
+          localStorage.setItem('etudes_active_user', u);
           showLevels();
         } else {
           alert("Nom d'utilisateur ou mot de passe incorrect.");
@@ -274,6 +301,7 @@
     }
 
     function logout() {
+      localStorage.removeItem('etudes_active_user'); // Efface la session
       hideAll();
       document.getElementById('top-nav').classList.add('hidden');
       document.getElementById('screen-auth').classList.remove('hidden');
@@ -290,6 +318,8 @@
 
     function showLevels() {
       hideAll();
+      const activeUser = localStorage.getItem('etudes_active_user') || "";
+      document.getElementById('user-greeting').innerText = activeUser ? `👤 ${activeUser}` : "";
       document.getElementById('top-nav').classList.remove('hidden');
       document.getElementById('btn-back').classList.add('hidden');
       document.getElementById('screen-levels').classList.remove('hidden');
@@ -326,9 +356,17 @@
       themes.forEach(t => {
         const row = document.createElement('div');
         row.className = "theme-item";
+        
+        let actionBtn = "";
+        if (t.link) {
+          actionBtn = `<a href="${t.link}" class="btn-play">Jouer 🎮</a>`;
+        } else {
+          actionBtn = `<button class="btn-nav" style="opacity:0.6; cursor:not-allowed;">Bientôt</button>`;
+        }
+
         row.innerHTML = `
-          <span class="theme-name">${t}</span>
-          <button class="btn-nav" onclick="window.location.href='canada.html'">Jouer ➜</button>
+          <span class="theme-name">${t.name}</span>
+          ${actionBtn}
         `;
         list.appendChild(row);
       });
