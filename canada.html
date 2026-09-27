@@ -63,7 +63,6 @@
     }
     .btn:hover { background: #e2e8f0; }
 
-    /* Sélecteur de Mode */
     .mode-select {
       display: flex;
       justify-content: center;
@@ -132,7 +131,6 @@
     .correct { color: #38a169; }
     .wrong { color: #e53e3e; }
 
-    /* Conteneur et Image */
     .map-wrapper {
       position: relative;
       width: 100%;
@@ -149,19 +147,18 @@
       display: block;
       user-select: none;
       -webkit-user-drag: none;
-      pointer-events: none; /* Empêche l'image d'intercepter les clics */
+      pointer-events: none;
     }
 
-    /* Zones cliquables */
     .zone-clic {
       position: absolute;
       transform: translate(-50%, -50%);
       border-radius: 50%;
       cursor: pointer;
-      z-index: 10; /* Toujours au-dessus de l'image */
-      background-color: rgba(255, 255, 255, 0.15);
-      border: 1px dashed rgba(74, 144, 226, 0.3);
-      transition: background 0.2s, box-shadow 0.2s;
+      z-index: 20;
+      background-color: rgba(255, 255, 255, 0.08);
+      border: 1px dashed rgba(74, 144, 226, 0.4);
+      transition: background 0.2s;
     }
 
     .zone-clic:hover {
@@ -170,13 +167,13 @@
     }
 
     .zone-clic.trouve {
-      background: rgba(72, 187, 120, 0.5) !important;
+      background: rgba(72, 187, 120, 0.55) !important;
       border-color: #38a169 !important;
       cursor: default;
     }
 
     .zone-clic.erreur {
-      background: rgba(229, 62, 62, 0.55) !important;
+      background: rgba(229, 62, 62, 0.6) !important;
       border-color: #e53e3e !important;
     }
   </style>
@@ -190,7 +187,6 @@
       <button class="btn" onclick="initGame()">Recommencer</button>
     </div>
 
-    <!-- Choix du mode -->
     <div class="mode-select">
       <button id="btn-mode-prov" class="btn-mode active-prov" onclick="setMode('prov')">Mode : Provinces et Territoires</button>
       <button id="btn-mode-cap" class="btn-mode" onclick="setMode('cap')">Mode : Capitales</button>
@@ -225,24 +221,21 @@
       { id: "NU", name: "Nunavut",             cap: "Iqaluit",        x: 64,   y: 26,   w: 20, h: 20 }
     ];
 
-    let currentMode = 'prov';
-    let remaining = [];
-    let currentTarget = null;
-    let score = 0;
-    let isLocked = false;
+    var currentMode = 'prov';
+    var remaining = [];
+    var currentTarget = null;
+    var score = 0;
+    var isLocked = false;
 
     function setMode(mode) {
       currentMode = mode;
-      document.getElementById('btn-mode-prov').className = mode === 'prov' ? 'btn-mode active-prov' : 'btn-mode';
-      document.getElementById('btn-mode-cap').className = mode === 'cap' ? 'btn-mode active-cap' : 'btn-mode';
+      document.getElementById('btn-mode-prov').className = (mode === 'prov') ? 'btn-mode active-prov' : 'btn-mode';
+      document.getElementById('btn-mode-cap').className = (mode === 'cap') ? 'btn-mode active-cap' : 'btn-mode';
       
-      const targetEl = document.getElementById('target-name');
-      targetEl.className = mode === 'prov' ? 'target target-prov' : 'target target-cap';
+      var targetEl = document.getElementById('target-name');
+      targetEl.className = (mode === 'prov') ? 'target target-prov' : 'target target-cap';
 
-      document.getElementById('label-question').innerText = mode === 'prov' 
-        ? "Où se trouve :" 
-        : "Capitale de :";
-
+      document.getElementById('label-question').innerText = (mode === 'prov') ? "Où se trouve :" : "Capitale de :";
       initGame();
     }
 
@@ -252,89 +245,88 @@
       document.getElementById('score').innerText = score;
       document.getElementById('feedback').innerText = "";
       
-      const mapBox = document.getElementById('map-box');
-      document.querySelectorAll('.zone-clic').forEach(z => z.remove());
+      var mapBox = document.getElementById('map-box');
+      var oldZones = document.querySelectorAll('.zone-clic');
+      for (var i = 0; i < oldZones.length; i++) {
+        oldZones[i].remove();
+      }
 
-      territories.forEach(p => {
-        const zone = document.createElement('div');
-        zone.id = `zone-${p.id}`;
-        zone.className = "zone-clic";
-        zone.style.left = `${p.x}%`;
-        zone.style.top = `${p.y}%`;
-        zone.style.width = `${p.w}%`;
-        zone.style.height = `${p.h}%`;
+      territories.forEach(function(p) {
+        var zone = document.createElement('div');
+        zone.id = 'zone-' + p.id;
+        zone.className = 'zone-clic';
+        zone.title = p.name; // Affiche le nom de la province au survol de la souris
+        zone.style.left = p.x + '%';
+        zone.style.top = p.y + '%';
+        zone.style.width = p.w + '%';
+        zone.style.height = p.h + '%';
         
-        // Détection de l'événement clic
-        zone.addEventListener('click', () => handleProvinceClick(p));
+        zone.onclick = function() {
+          handleProvinceClick(p);
+        };
         mapBox.appendChild(zone);
       });
 
-      remaining = [...territories];
+      remaining = territories.slice();
       nextQuestion();
     }
 
     function nextQuestion() {
       if (remaining.length === 0) {
         document.getElementById('target-name').innerText = "Terminé !";
-        document.getElementById('feedback').innerText = currentMode === 'prov'
+        document.getElementById('feedback').innerText = (currentMode === 'prov')
           ? "🎉 Bravo Coco ! Tu maîtrises toutes les provinces et territoires !"
           : "🏆 Chapeau Coco ! Tu connais toutes les capitales par cœur !";
         document.getElementById('feedback').className = "feedback correct";
         return;
       }
 
-      const randomIndex = Math.floor(Math.random() * remaining.length);
+      var randomIndex = Math.floor(Math.random() * remaining.length);
       currentTarget = remaining[randomIndex];
       
-      document.getElementById('target-name').innerText = currentMode === 'prov' 
-        ? currentTarget.name 
-        : currentTarget.cap;
-        
+      document.getElementById('target-name').innerText = (currentMode === 'prov') ? currentTarget.name : currentTarget.cap;
       document.getElementById('feedback').innerText = "";
     }
 
     function handleProvinceClick(p) {
       if (isLocked || !currentTarget) return;
 
-      const zone = document.getElementById(`zone-${p.id}`);
+      var zone = document.getElementById('zone-' + p.id);
       if (zone.classList.contains('trouve')) return;
 
       if (p.id === currentTarget.id) {
-        // Bonne réponse
         score++;
         document.getElementById('score').innerText = score;
         
-        document.getElementById('feedback').innerText = currentMode === 'prov'
-          ? `Bravo ! C'est bien : ${currentTarget.name}`
-          : `Exact ! La capitale de ${currentTarget.name} est bien ${currentTarget.cap} !`;
+        document.getElementById('feedback').innerText = (currentMode === 'prov')
+          ? "Bravo ! C'est bien : " + currentTarget.name
+          : "Exact ! La capitale de " + currentTarget.name + " est bien " + currentTarget.cap + " !";
         document.getElementById('feedback').className = "feedback correct";
         
         zone.classList.add('trouve');
-        remaining = remaining.filter(item => item.id !== currentTarget.id);
+        remaining = remaining.filter(function(item) { return item.id !== currentTarget.id; });
 
         isLocked = true;
-        setTimeout(() => {
+        setTimeout(function() {
           isLocked = false;
           nextQuestion();
         }, 700);
       } else {
-        // Mauvaise réponse
-        document.getElementById('feedback').innerText = currentMode === 'prov'
-          ? `Oups ! Tu as cliqué sur : ${p.name}`
-          : `Non, ici c'est ${p.name} (Capitale : ${p.cap})`;
+        document.getElementById('feedback').innerText = (currentMode === 'prov')
+          ? "Oups ! Tu as cliqué sur : " + p.name
+          : "Non, ici c'est " + p.name + " (Capitale : " + p.cap + ")";
         document.getElementById('feedback').className = "feedback wrong";
         
         zone.classList.add('erreur');
-        setTimeout(() => zone.classList.remove('erreur'), 600);
+        setTimeout(function() {
+          zone.classList.remove('erreur');
+        }, 600);
       }
     }
 
-    window.onload = () => setMode('prov');
-  </script>
-</body>
-</html>
-
-    window.onload = initGame;
+    window.addEventListener('load', function() {
+      setMode('prov');
+    });
   </script>
 </body>
 </html>
