@@ -2,339 +2,188 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jeu interactif du Canada</title>
+  <title>Calibrage Précis - Études de Coco</title>
   <style>
-    :root {
-      --primary: #4A90E2;
-      --bg: #F0F4F8;
-      --card: #FFFFFF;
-      --text: #2D3748;
-      --border: #E2E8F0;
-      --cap-color: #7B68EE;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
     body {
-      background-color: var(--bg);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 16px;
-      min-height: 100vh;
-    }
-
-    .container {
-      background: var(--card);
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-      width: 100%;
-      max-width: 950px;
-      padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       text-align: center;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 15px;
     }
-
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      background: #edf2f7;
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 14px;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      font-size: 0.9rem;
-    }
-    .btn:hover { background: #e2e8f0; }
-
-    .mode-select {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    .btn-mode {
-      padding: 10px 18px;
-      font-size: 0.95rem;
-      font-weight: bold;
-      border-radius: 25px;
-      border: 2px solid var(--border);
+    .panel {
       background: white;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-mode.active-prov {
-      border-color: #e53e3e;
-      background: #fff5f5;
-      color: #c53030;
-    }
-    .btn-mode.active-cap {
-      border-color: var(--cap-color);
-      background: #f3f0ff;
-      color: var(--cap-color);
-    }
-
-    .hud {
-      background: #f8fafc;
-      border: 1px solid var(--border);
+      padding: 15px 25px;
       border-radius: 12px;
-      padding: 12px 18px;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      margin-bottom: 12px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      flex-wrap: wrap;
-      gap: 10px;
+      max-width: 900px;
+      margin: 0 auto 15px auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
-
-    .target {
-      font-size: 1.3rem;
-      padding: 4px 14px;
-      border-radius: 8px;
+    .instruction {
+      font-size: 1.25rem;
+      margin-bottom: 10px;
     }
-    .target-prov {
-      color: #c53030;
+    .highlight {
+      color: #e53e3e;
+      font-weight: bold;
       background: #fff5f5;
+      padding: 3px 10px;
+      border-radius: 6px;
       border: 1px solid #feb2b2;
     }
-    .target-cap {
-      color: var(--cap-color);
-      background: #f3f0ff;
-      border: 1px solid #d6bcfa;
-    }
-
-    .feedback {
-      min-height: 28px;
-      font-size: 1.05rem;
-      font-weight: bold;
-      margin-bottom: 12px;
-    }
-    .correct { color: #38a169; }
-    .wrong { color: #e53e3e; }
-
-    /* Carte vectorielle responsive */
-    .map-box {
+    .result-box {
       width: 100%;
-      max-width: 850px;
-      margin: 0 auto;
-      border-radius: 12px;
-      background: #d4f1f9;
-      border: 2px solid #bce3ee;
-      overflow: hidden;
+      height: 90px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 0.95rem;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e0;
+      box-sizing: border-box;
     }
-
-    svg {
+    .map-container {
+      position: relative;
+      display: inline-block;
+      border: 2px solid #2d3748;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+    img {
+      display: block;
+      max-width: 950px;
       width: 100%;
       height: auto;
-      display: block;
+      cursor: crosshair;
     }
-
-    /* Style des provinces */
-    .prov-path {
-      fill: #ffffff;
-      stroke: #2b6cb0;
-      stroke-width: 1.5;
+    .point {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      background: #e53e3e;
+      border: 2px solid white;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      box-shadow: 0 0 4px rgba(0,0,0,0.5);
+    }
+    .label {
+      position: absolute;
+      transform: translate(-50%, -150%);
+      background: rgba(0,0,0,0.75);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 4px;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    button {
+      background: #4a90e2;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
       cursor: pointer;
-      transition: fill 0.2s, stroke-width 0.2s;
+      margin-top: 5px;
     }
-
-    .prov-path:hover {
-      fill: #e2e8f0;
-      stroke-width: 2.5;
-    }
-
-    .prov-path.trouve {
-      fill: #68d391 !important;
-      stroke: #22543d !important;
-      cursor: default;
-    }
-
-    .prov-path.erreur {
-      fill: #feb2b2 !important;
-      stroke: #9b2c2c !important;
-    }
+    button:hover { background: #357abd; }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="top-bar">
-      <a href="index.html" class="btn">⬅ Menu principal</a>
-      <h1 style="color:var(--primary); font-size:1.5rem;">Jeu interactif du Canada 🍁</h1>
-      <button class="btn" onclick="initGame()">Recommencer</button>
+  <div class="panel">
+    <h2>🎯 Calibreur des 13 Provinces et Territoires</h2>
+    <div class="instruction">
+      Cliquez au centre de : <span id="current-target" class="highlight">...</span>
+      <span id="step-count" style="color: #718096; font-size: 1rem; margin-left: 10px;">(1 / 13)</span>
     </div>
+    <button onclick="skipOrRestart()">Recommencer à zéro</button>
+    <textarea id="output" class="result-box" readonly placeholder="Les coordonnées s'écriront ici au fur et à mesure..."></textarea>
+  </div>
 
-    <div class="mode-select">
-      <button id="btn-mode-prov" class="btn-mode active-prov" onclick="setMode('prov')">Mode : Provinces et Territoires</button>
-      <button id="btn-mode-cap" class="btn-mode" onclick="setMode('cap')">Mode : Capitales</button>
-    </div>
-
-    <div class="hud">
-      <div>Score : <span id="score">0</span> / 13</div>
-      <div><span id="label-question">Place sur la carte :</span> <span id="target-name" class="target target-prov">...</span></div>
-    </div>
-
-    <div id="feedback" class="feedback"></div>
-
-    <div class="map-box">
-      <!-- Tracés polygonaux officiels des 10 provinces et 3 territoires (Vue Albers Canada) -->
-      <svg viewBox="0 0 1000 650" id="canada-svg">
-        <!-- Yukon -->
-        <polygon id="YT" class="prov-path" points="80,180 185,185 170,330 90,325 80,180" />
-        <!-- Territoires du Nord-Ouest -->
-        <polygon id="NT" class="prov-path" points="185,185 365,190 350,335 170,330 185,185" />
-        <!-- Nunavut -->
-        <polygon id="NU" class="prov-path" points="365,190 620,195 590,345 350,335 365,190" />
-        <!-- Colombie-Britannique -->
-        <polygon id="BC" class="prov-path" points="90,325 170,330 200,470 120,465 90,325" />
-        <!-- Alberta -->
-        <polygon id="AB" class="prov-path" points="200,330 265,332 270,472 200,470 200,330" />
-        <!-- Saskatchewan -->
-        <polygon id="SK" class="prov-path" points="265,332 335,333 340,473 270,472 265,332" />
-        <!-- Manitoba -->
-        <polygon id="MB" class="prov-path" points="335,333 425,335 435,475 340,473 335,333" />
-        <!-- Ontario -->
-        <polygon id="ON" class="prov-path" points="425,335 550,340 575,520 450,515 435,475 425,335" />
-        <!-- Québec -->
-        <polygon id="QC" class="prov-path" points="550,340 710,345 745,490 600,510 575,520 550,340" />
-        <!-- Nouveau-Brunswick -->
-        <polygon id="NB" class="prov-path" points="745,490 775,492 770,525 740,523 745,490" />
-        <!-- Nouvelle-Écosse -->
-        <polygon id="NS" class="prov-path" points="775,510 820,515 810,545 770,535 775,510" />
-        <!-- Île-du-Prince-Édouard -->
-        <polygon id="PE" class="prov-path" points="775,480 805,482 800,495 770,493 775,480" />
-        <!-- Terre-Neuve-et-Labrador -->
-        <polygon id="NL" class="prov-path" points="710,345 815,350 840,450 745,450 710,345" />
-      </svg>
-    </div>
+  <div class="map-container" id="box">
+    <img id="ma-carte" src="canada.png" alt="Carte du Canada">
   </div>
 
   <script>
-    const territories = [
-      { id: "BC", name: "Colombie-Britannique", cap: "Victoria" },
-      { id: "AB", name: "Alberta",             cap: "Edmonton" },
-      { id: "SK", name: "Saskatchewan",        cap: "Regina" },
-      { id: "MB", name: "Manitoba",            cap: "Winnipeg" },
-      { id: "ON", name: "Ontario",             cap: "Toronto" },
-      { id: "QC", name: "Québec",              cap: "Québec" },
-      { id: "NB", name: "Nouveau-Brunswick",   cap: "Fredericton" },
-      { id: "NS", name: "Nouvelle-Écosse",     cap: "Halifax" },
-      { id: "PE", name: "Île-du-Prince-Édouard", cap: "Charlottetown" },
-      { id: "NL", name: "Terre-Neuve-et-Labrador", cap: "Saint-Jean" },
-      { id: "YT", name: "Yukon",               cap: "Whitehorse" },
-      { id: "NT", name: "Territoires du Nord-Ouest", cap: "Yellowknife" },
-      { id: "NU", name: "Nunavut",             cap: "Iqaluit" }
+    const provinces = [
+      { id: "BC", name: "Colombie-Britannique" },
+      { id: "AB", name: "Alberta" },
+      { id: "SK", name: "Saskatchewan" },
+      { id: "MB", name: "Manitoba" },
+      { id: "ON", name: "Ontario" },
+      { id: "QC", name: "Québec" },
+      { id: "NB", name: "Nouveau-Brunswick" },
+      { id: "NS", name: "Nouvelle-Écosse" },
+      { id: "PE", name: "Île-du-Prince-Édouard" },
+      { id: "NL", name: "Terre-Neuve-et-Labrador" },
+      { id: "YT", name: "Yukon" },
+      { id: "NT", name: "Territoires du Nord-Ouest" },
+      { id: "NU", name: "Nunavut" }
     ];
 
-    var currentMode = 'prov';
-    var remaining = [];
-    var currentTarget = null;
-    var score = 0;
-    var isLocked = false;
+    let currentIndex = 0;
+    const collectedCoords = {};
 
-    function setMode(mode) {
-      currentMode = mode;
-      document.getElementById('btn-mode-prov').className = (mode === 'prov') ? 'btn-mode active-prov' : 'btn-mode';
-      document.getElementById('btn-mode-cap').className = (mode === 'cap') ? 'btn-mode active-cap' : 'btn-mode';
-      
-      var targetEl = document.getElementById('target-name');
-      targetEl.className = (mode === 'prov') ? 'target target-prov' : 'target target-cap';
+    const targetEl = document.getElementById('current-target');
+    const stepEl = document.getElementById('step-count');
+    const outputEl = document.getElementById('output');
+    const img = document.getElementById('ma-carte');
+    const box = document.getElementById('box');
 
-      document.getElementById('label-question').innerText = (mode === 'prov') ? "Place sur la carte :" : "Capitale de :";
-      initGame();
-    }
-
-    function initGame() {
-      score = 0;
-      isLocked = false;
-      document.getElementById('score').innerText = score;
-      document.getElementById('feedback').innerText = "";
-
-      // Réinitialiser les couleurs des provinces
-      document.querySelectorAll('.prov-path').forEach(p => {
-        p.classList.remove('trouve', 'erreur');
-        p.onclick = () => handleProvinceClick(p.id);
-      });
-
-      remaining = territories.slice();
-      nextQuestion();
-    }
-
-    function nextQuestion() {
-      if (remaining.length === 0) {
-        document.getElementById('target-name').innerText = "Terminé !";
-        document.getElementById('feedback').innerText = (currentMode === 'prov')
-          ? "🎉 Bravo Coco ! Tu as placé toutes les provinces et territoires !"
-          : "🏆 Excellent Coco ! Tu maîtrises toutes les capitales !";
-        document.getElementById('feedback').className = "feedback correct";
-        return;
-      }
-
-      var randomIndex = Math.floor(Math.random() * remaining.length);
-      currentTarget = remaining[randomIndex];
-      
-      document.getElementById('target-name').innerText = (currentMode === 'prov') ? currentTarget.name : currentTarget.cap;
-      document.getElementById('feedback').innerText = "";
-    }
-
-    function handleProvinceClick(clickedId) {
-      if (isLocked || !currentTarget) return;
-
-      var pathEl = document.getElementById(clickedId);
-      if (pathEl.classList.contains('trouve')) return;
-
-      if (clickedId === currentTarget.id) {
-        // Bonne réponse
-        score++;
-        document.getElementById('score').innerText = score;
-        
-        document.getElementById('feedback').innerText = (currentMode === 'prov')
-          ? "Bravo ! C'est le bon endroit !"
-          : "Exact ! Tu as trouvé la bonne capitale !";
-        document.getElementById('feedback').className = "feedback correct";
-        
-        pathEl.classList.add('trouve');
-        remaining = remaining.filter(item => item.id !== currentTarget.id);
-
-        isLocked = true;
-        setTimeout(() => {
-          isLocked = false;
-          nextQuestion();
-        }, 700);
+    function updateTarget() {
+      if (currentIndex < provinces.length) {
+        targetEl.innerText = provinces[currentIndex].name;
+        stepEl.innerText = `(${currentIndex + 1} / 13)`;
       } else {
-        // Erreur : aucun indice textuel donné
-        document.getElementById('feedback').innerText = "Oups ! Ce n'est pas ici, réessaie !";
-        document.getElementById('feedback').className = "feedback wrong";
-        
-        pathEl.classList.add('erreur');
-        setTimeout(() => {
-          pathEl.classList.remove('erreur');
-        }, 600);
+        targetEl.innerText = "Terminé ! 🎉";
+        stepEl.innerText = "(13 / 13)";
+        outputEl.select();
       }
     }
 
-    window.addEventListener('load', function() {
-      setMode('prov');
+    img.addEventListener('click', function(e) {
+      if (currentIndex >= provinces.length) return;
+
+      const rect = img.getBoundingClientRect();
+      const x = parseFloat(((e.clientX - rect.left) / rect.width * 100).toFixed(1));
+      const y = parseFloat(((e.clientY - rect.top) / rect.height * 100).toFixed(1));
+
+      const prov = provinces[currentIndex];
+      collectedCoords[prov.id] = { name: prov.name, x: x, y: y };
+
+      // Affichage visuel du point posé
+      const pt = document.createElement('div');
+      pt.className = 'point';
+      pt.style.left = x + '%';
+      pt.style.top = y + '%';
+      box.appendChild(pt);
+
+      const lbl = document.createElement('div');
+      lbl.className = 'label';
+      lbl.style.left = x + '%';
+      lbl.style.top = y + '%';
+      lbl.innerText = prov.id;
+      box.appendChild(lbl);
+
+      currentIndex++;
+      outputEl.value = JSON.stringify(collectedCoords, null, 2);
+      updateTarget();
     });
+
+    function skipOrRestart() {
+      currentIndex = 0;
+      for (const k in collectedCoords) delete collectedCoords[k];
+      document.querySelectorAll('.point, .label').forEach(el => el.remove());
+      outputEl.value = "";
+      updateTarget();
+    }
+
+    updateTarget();
   </script>
 </body>
 </html>
