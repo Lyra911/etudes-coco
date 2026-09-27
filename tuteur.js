@@ -1,12 +1,9 @@
 // ==========================================
 // CONFIGURATION DU TUTEUR INTELLIGENT
 // ==========================================
-// Remplacez l'URL ci-dessous par l'URL de votre déploiement Web Google Apps Script
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxiYjUFiKCnT_Vmm8Ptzuh1Lw8WzyrlTBZ1Hm0dvPYYsAEXzEfge_a9UNJ6nNpa4gnO2g/exec";
 
-// Fonction principale pour envoyer un message au tuteur
 async function envoyerAuTuteur(promptTexte) {
-  // Récupérer les courriels des parents enregistrés dans le navigateur (Espace Parent)
   const parentEmails = localStorage.getItem('etudes_parent_emails') || '';
 
   const payload = {
@@ -17,17 +14,19 @@ async function envoyerAuTuteur(promptTexte) {
   try {
     const response = await fetch(SCRIPT_URL, {
       method: "POST",
-      contentType: "application/json",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     });
 
     const data = await response.json();
     
-    if (data.status === "success") {
+    if (data.response) {
       return data.response;
-    } else {
-      console.error("Erreur du tuteur :", data.message);
+    } else if (data.error) {
+      console.error("Erreur du tuteur :", data.error);
       return "Oups ! Le tuteur rencontre un petit problème technique. Réessaie dans un moment !";
+    } else {
+      return typeof data === 'string' ? data : "Réponse reçue du tuteur.";
     }
   } catch (error) {
     console.error("Erreur de connexion :", error);
@@ -51,7 +50,6 @@ function initialiserTuteurUI(containerId) {
   `;
 }
 
-// Action déclenchée au clic sur le bouton d'envoi
 async function poserQuestionTuteur() {
   const input = document.getElementById('tuteur-input');
   const reponseBox = document.getElementById('tuteur-reponse');
