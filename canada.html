@@ -150,31 +150,42 @@
       pointer-events: none;
     }
 
+    /* Ronds cliquables visibles pour le calage */
     .zone-clic {
       position: absolute;
       transform: translate(-50%, -50%);
       border-radius: 50%;
       cursor: pointer;
       z-index: 20;
-      background-color: rgba(255, 255, 255, 0.08);
-      border: 1px dashed rgba(74, 144, 226, 0.4);
-      transition: background 0.2s;
+      background-color: rgba(255, 255, 255, 0.45);
+      border: 2px solid #2B6CB0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #1A365D;
+      transition: background 0.2s, transform 0.15s;
+      user-select: none;
     }
 
     .zone-clic:hover {
-      background-color: rgba(74, 144, 226, 0.35) !important;
-      border-color: #4A90E2;
+      background-color: rgba(74, 144, 226, 0.7) !important;
+      color: white;
+      transform: translate(-50%, -50%) scale(1.08);
     }
 
     .zone-clic.trouve {
-      background: rgba(72, 187, 120, 0.55) !important;
-      border-color: #38a169 !important;
+      background: rgba(72, 187, 120, 0.75) !important;
+      border-color: #276749 !important;
+      color: white;
       cursor: default;
     }
 
     .zone-clic.erreur {
-      background: rgba(229, 62, 62, 0.6) !important;
-      border-color: #e53e3e !important;
+      background: rgba(229, 62, 62, 0.75) !important;
+      border-color: #9B2C2C !important;
+      color: white;
     }
   </style>
 </head>
@@ -205,20 +216,21 @@
   </div>
 
   <script>
+    // Coordonnées recalculées d'après votre photo (Y descendu et X corrigé)
     const territories = [
-      { id: "BC", name: "Colombie-Britannique", cap: "Victoria",       x: 27.5, y: 39.5, w: 10, h: 18 },
-      { id: "AB", name: "Alberta",             cap: "Edmonton",       x: 38,   y: 41.5, w: 9,  h: 18 },
-      { id: "SK", name: "Saskatchewan",        cap: "Regina",         x: 47,   y: 43.5, w: 8,  h: 18 },
-      { id: "MB", name: "Manitoba",            cap: "Winnipeg",       x: 54,   y: 43,   w: 8,  h: 18 },
-      { id: "ON", name: "Ontario",             cap: "Toronto",        x: 63,   y: 46,   w: 12, h: 18 },
-      { id: "QC", name: "Québec",              cap: "Québec",         x: 74,   y: 39.5, w: 14, h: 22 },
-      { id: "NB", name: "Nouveau-Brunswick",   cap: "Fredericton",    x: 81.5, y: 44.5, w: 5,  h: 7 },
-      { id: "NS", name: "Nouvelle-Écosse",     cap: "Halifax",        x: 85.5, y: 47,   w: 6,  h: 6 },
-      { id: "PE", name: "Île-du-Prince-Édouard", cap: "Charlottetown", x: 84.5, y: 42.5, w: 4, h: 4 },
-      { id: "NL", name: "Terre-Neuve-et-Labrador", cap: "Saint-Jean", x: 83.5, y: 34,   w: 12, h: 14 },
-      { id: "YT", name: "Yukon",               cap: "Whitehorse",     x: 31,   y: 26,   w: 9,  h: 14 },
-      { id: "NT", name: "Territoires du Nord-Ouest", cap: "Yellowknife", x: 44, y: 28,  w: 14, h: 16 },
-      { id: "NU", name: "Nunavut",             cap: "Iqaluit",        x: 64,   y: 26,   w: 20, h: 20 }
+      { id: "BC", name: "Colombie-Britannique", cap: "Victoria",       x: 6.5,  y: 65, w: 7, h: 10 },
+      { id: "AB", name: "Alberta",             cap: "Edmonton",       x: 18,   y: 68, w: 7, h: 10 },
+      { id: "SK", name: "Saskatchewan",        cap: "Regina",         x: 30,   y: 70, w: 7, h: 10 },
+      { id: "MB", name: "Manitoba",            cap: "Winnipeg",       x: 42,   y: 70, w: 7, h: 10 },
+      { id: "ON", name: "Ontario",             cap: "Toronto",        x: 58,   y: 75, w: 8, h: 11 },
+      { id: "QC", name: "Québec",              cap: "Québec",         x: 77,   y: 64, w: 9, h: 12 },
+      { id: "NB", name: "Nouveau-Brunswick",   cap: "Fredericton",    x: 91,   y: 73, w: 4.5, h: 6.5 },
+      { id: "NS", name: "Nouvelle-Écosse",     cap: "Halifax",        x: 96,   y: 76, w: 4.5, h: 6.5 },
+      { id: "PE", name: "Île-du-Prince-Édouard", cap: "Charlottetown", x: 94,   y: 70, w: 4, h: 5.5 },
+      { id: "NL", name: "Terre-Neuve-et-Labrador", cap: "Saint-Jean", x: 91,   y: 57, w: 7, h: 9 },
+      { id: "YT", name: "Yukon",               cap: "Whitehorse",     x: 8,    y: 43, w: 6.5, h: 9 },
+      { id: "NT", name: "Territoires du Nord-Ouest", cap: "Yellowknife", x: 26, y: 46, w: 8, h: 10 },
+      { id: "NU", name: "Nunavut",             cap: "Iqaluit",        x: 60,   y: 45, w: 9, h: 11 }
     ];
 
     var currentMode = 'prov';
@@ -255,7 +267,8 @@
         var zone = document.createElement('div');
         zone.id = 'zone-' + p.id;
         zone.className = 'zone-clic';
-        zone.title = p.name; // Affiche le nom de la province au survol de la souris
+        zone.innerText = p.id; // Affiche les 2 lettres (ex: QC, ON, AB) pour vérification visuelle
+        zone.title = p.name;
         zone.style.left = p.x + '%';
         zone.style.top = p.y + '%';
         zone.style.width = p.w + '%';
