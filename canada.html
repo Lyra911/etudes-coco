@@ -11,6 +11,7 @@
       --card: #FFFFFF;
       --text: #2D3748;
       --border: #E2E8F0;
+      --cap-color: #7B68EE;
     }
 
     * {
@@ -44,8 +45,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
     .btn {
@@ -61,6 +63,35 @@
     }
     .btn:hover { background: #e2e8f0; }
 
+    /* Sélecteur de Mode */
+    .mode-select {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .btn-mode {
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      border-radius: 25px;
+      border: 2px solid var(--border);
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-mode.active-prov {
+      border-color: #e53e3e;
+      background: #fff5f5;
+      color: #c53030;
+    }
+    .btn-mode.active-cap {
+      border-color: var(--cap-color);
+      background: #f3f0ff;
+      color: var(--cap-color);
+    }
+
     .hud {
       background: #f8fafc;
       border: 1px solid var(--border);
@@ -69,30 +100,39 @@
       display: flex;
       justify-content: space-around;
       align-items: center;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
       font-size: 1.1rem;
       font-weight: 600;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .target {
-      color: var(--primary);
       font-size: 1.3rem;
-      background: #ebf8ff;
       padding: 4px 14px;
       border-radius: 8px;
-      border: 1px solid #bee3f8;
+    }
+    .target-prov {
+      color: #c53030;
+      background: #fff5f5;
+      border: 1px solid #feb2b2;
+    }
+    .target-cap {
+      color: var(--cap-color);
+      background: #f3f0ff;
+      border: 1px solid #d6bcfa;
     }
 
     .feedback {
       min-height: 28px;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: bold;
       margin-bottom: 12px;
     }
     .correct { color: #38a169; }
     .wrong { color: #e53e3e; }
 
-    /* Conteneur de la carte */
+    /* Conteneur et Image */
     .map-wrapper {
       position: relative;
       width: 100%;
@@ -109,32 +149,35 @@
       display: block;
       user-select: none;
       -webkit-user-drag: none;
+      pointer-events: none; /* Empêche l'image d'intercepter les clics */
     }
 
-    /* Grandes zones tactiles invisibles sur chaque province */
+    /* Zones cliquables */
     .zone-clic {
       position: absolute;
       transform: translate(-50%, -50%);
       border-radius: 50%;
       cursor: pointer;
-      /* On laisse un léger fond transparent au survol pour que Coco sente la zone */
-      background: rgba(255, 255, 255, 0.01);
+      z-index: 10; /* Toujours au-dessus de l'image */
+      background-color: rgba(255, 255, 255, 0.15);
+      border: 1px dashed rgba(74, 144, 226, 0.3);
       transition: background 0.2s, box-shadow 0.2s;
     }
 
     .zone-clic:hover {
-      background: rgba(74, 144, 226, 0.25);
-      box-shadow: 0 0 15px rgba(74, 144, 226, 0.4);
+      background-color: rgba(74, 144, 226, 0.35) !important;
+      border-color: #4A90E2;
     }
 
-    /* Quand la province a été trouvée */
     .zone-clic.trouve {
-      background: rgba(72, 187, 120, 0.4) !important;
+      background: rgba(72, 187, 120, 0.5) !important;
+      border-color: #38a169 !important;
       cursor: default;
     }
 
     .zone-clic.erreur {
-      background: rgba(229, 62, 62, 0.45) !important;
+      background: rgba(229, 62, 62, 0.55) !important;
+      border-color: #e53e3e !important;
     }
   </style>
 </head>
@@ -142,47 +185,66 @@
 
   <div class="container">
     <div class="top-bar">
-      <a href="index.html" class="btn">⬅ Menu</a>
-      <h1 style="color:var(--primary); font-size:1.5rem;">Où se trouve cette province ? 🍁</h1>
+      <a href="index.html" class="btn">⬅ Menu principal</a>
+      <h1 style="color:var(--primary); font-size:1.5rem;">Jeu interactif du Canada 🍁</h1>
       <button class="btn" onclick="initGame()">Recommencer</button>
+    </div>
+
+    <!-- Choix du mode -->
+    <div class="mode-select">
+      <button id="btn-mode-prov" class="btn-mode active-prov" onclick="setMode('prov')">Mode : Provinces et Territoires</button>
+      <button id="btn-mode-cap" class="btn-mode" onclick="setMode('cap')">Mode : Capitales</button>
     </div>
 
     <div class="hud">
       <div>Score : <span id="score">0</span> / 13</div>
-      <div>Trouve : <span id="target-name" class="target">...</span></div>
+      <div><span id="label-question">Où se trouve :</span> <span id="target-name" class="target target-prov">...</span></div>
     </div>
 
     <div id="feedback" class="feedback"></div>
 
     <div class="map-wrapper" id="map-box">
-      <!-- Votre vraie image -->
       <img src="canada.png" alt="Carte du Canada" class="map-img">
-      <!-- Les zones cliquables seront créées automatiquement ici -->
     </div>
   </div>
 
   <script>
-    // Coordonnées ajustées pour votre carte couleur, avec des diamètres de clic confortables (en % de la carte)
-    const provinces = [
-      { id: "BC", name: "Colombie-Britannique", x: 27.5, y: 39.5, w: 10, h: 18 },
-      { id: "AB", name: "Alberta",             x: 38,   y: 41.5, w: 9,  h: 18 },
-      { id: "SK", name: "Saskatchewan",        x: 47,   y: 43.5, w: 8,  h: 18 },
-      { id: "MB", name: "Manitoba",            x: 54,   y: 43,   w: 8,  h: 18 },
-      { id: "ON", name: "Ontario",             x: 63,   y: 46,   w: 12, h: 18 },
-      { id: "QC", name: "Québec",              x: 74,   y: 39.5, w: 14, h: 22 },
-      { id: "NB", name: "Nouveau-Brunswick",   x: 81.5, y: 44.5, w: 5,  h: 7 },
-      { id: "NS", name: "Nouvelle-Écosse",     x: 85.5, y: 47,   w: 6,  h: 6 },
-      { id: "PE", name: "Île-du-Prince-Édouard", x: 84.5, y: 42.5, w: 4, h: 4 },
-      { id: "NL", name: "Terre-Neuve-et-Labrador", x: 83.5, y: 34, w: 12, h: 14 },
-      { id: "YT", name: "Yukon",               x: 31,   y: 26,   w: 9,  h: 14 },
-      { id: "NT", name: "Territoires du Nord-Ouest", x: 44, y: 28, w: 14, h: 16 },
-      { id: "NU", name: "Nunavut",             x: 64,   y: 26,   w: 20, h: 20 }
+    const territories = [
+      { id: "BC", name: "Colombie-Britannique", cap: "Victoria",       x: 27.5, y: 39.5, w: 10, h: 18 },
+      { id: "AB", name: "Alberta",             cap: "Edmonton",       x: 38,   y: 41.5, w: 9,  h: 18 },
+      { id: "SK", name: "Saskatchewan",        cap: "Regina",         x: 47,   y: 43.5, w: 8,  h: 18 },
+      { id: "MB", name: "Manitoba",            cap: "Winnipeg",       x: 54,   y: 43,   w: 8,  h: 18 },
+      { id: "ON", name: "Ontario",             cap: "Toronto",        x: 63,   y: 46,   w: 12, h: 18 },
+      { id: "QC", name: "Québec",              cap: "Québec",         x: 74,   y: 39.5, w: 14, h: 22 },
+      { id: "NB", name: "Nouveau-Brunswick",   cap: "Fredericton",    x: 81.5, y: 44.5, w: 5,  h: 7 },
+      { id: "NS", name: "Nouvelle-Écosse",     cap: "Halifax",        x: 85.5, y: 47,   w: 6,  h: 6 },
+      { id: "PE", name: "Île-du-Prince-Édouard", cap: "Charlottetown", x: 84.5, y: 42.5, w: 4, h: 4 },
+      { id: "NL", name: "Terre-Neuve-et-Labrador", cap: "Saint-Jean", x: 83.5, y: 34,   w: 12, h: 14 },
+      { id: "YT", name: "Yukon",               cap: "Whitehorse",     x: 31,   y: 26,   w: 9,  h: 14 },
+      { id: "NT", name: "Territoires du Nord-Ouest", cap: "Yellowknife", x: 44, y: 28,  w: 14, h: 16 },
+      { id: "NU", name: "Nunavut",             cap: "Iqaluit",        x: 64,   y: 26,   w: 20, h: 20 }
     ];
 
+    let currentMode = 'prov';
     let remaining = [];
     let currentTarget = null;
     let score = 0;
     let isLocked = false;
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.getElementById('btn-mode-prov').className = mode === 'prov' ? 'btn-mode active-prov' : 'btn-mode';
+      document.getElementById('btn-mode-cap').className = mode === 'cap' ? 'btn-mode active-cap' : 'btn-mode';
+      
+      const targetEl = document.getElementById('target-name');
+      targetEl.className = mode === 'prov' ? 'target target-prov' : 'target target-cap';
+
+      document.getElementById('label-question').innerText = mode === 'prov' 
+        ? "Où se trouve :" 
+        : "Capitale de :";
+
+      initGame();
+    }
 
     function initGame() {
       score = 0;
@@ -191,11 +253,9 @@
       document.getElementById('feedback').innerText = "";
       
       const mapBox = document.getElementById('map-box');
-      // Enlever les anciennes zones s'il y en avait
       document.querySelectorAll('.zone-clic').forEach(z => z.remove());
 
-      // Création des zones de clic sur chaque province
-      provinces.forEach(p => {
+      territories.forEach(p => {
         const zone = document.createElement('div');
         zone.id = `zone-${p.id}`;
         zone.className = "zone-clic";
@@ -204,25 +264,32 @@
         zone.style.width = `${p.w}%`;
         zone.style.height = `${p.h}%`;
         
-        zone.onclick = () => handleProvinceClick(p);
+        // Détection de l'événement clic
+        zone.addEventListener('click', () => handleProvinceClick(p));
         mapBox.appendChild(zone);
       });
 
-      remaining = [...provinces];
+      remaining = [...territories];
       nextQuestion();
     }
 
     function nextQuestion() {
       if (remaining.length === 0) {
         document.getElementById('target-name').innerText = "Terminé !";
-        document.getElementById('feedback').innerText = "🎉 Bravo Coco ! 13 sur 13 !";
+        document.getElementById('feedback').innerText = currentMode === 'prov'
+          ? "🎉 Bravo Coco ! Tu maîtrises toutes les provinces et territoires !"
+          : "🏆 Chapeau Coco ! Tu connais toutes les capitales par cœur !";
         document.getElementById('feedback').className = "feedback correct";
         return;
       }
 
       const randomIndex = Math.floor(Math.random() * remaining.length);
       currentTarget = remaining[randomIndex];
-      document.getElementById('target-name').innerText = currentTarget.name;
+      
+      document.getElementById('target-name').innerText = currentMode === 'prov' 
+        ? currentTarget.name 
+        : currentTarget.cap;
+        
       document.getElementById('feedback').innerText = "";
     }
 
@@ -233,10 +300,13 @@
       if (zone.classList.contains('trouve')) return;
 
       if (p.id === currentTarget.id) {
-        // Bonne province cliquée
+        // Bonne réponse
         score++;
         document.getElementById('score').innerText = score;
-        document.getElementById('feedback').innerText = `Excellent ! C'est bien : ${currentTarget.name}`;
+        
+        document.getElementById('feedback').innerText = currentMode === 'prov'
+          ? `Bravo ! C'est bien : ${currentTarget.name}`
+          : `Exact ! La capitale de ${currentTarget.name} est bien ${currentTarget.cap} !`;
         document.getElementById('feedback').className = "feedback correct";
         
         zone.classList.add('trouve');
@@ -248,14 +318,21 @@
           nextQuestion();
         }, 700);
       } else {
-        // Mauvaise province cliquée
-        document.getElementById('feedback').innerText = `Ce n'est pas là, tu as cliqué sur : ${p.name}`;
+        // Mauvaise réponse
+        document.getElementById('feedback').innerText = currentMode === 'prov'
+          ? `Oups ! Tu as cliqué sur : ${p.name}`
+          : `Non, ici c'est ${p.name} (Capitale : ${p.cap})`;
         document.getElementById('feedback').className = "feedback wrong";
         
         zone.classList.add('erreur');
         setTimeout(() => zone.classList.remove('erreur'), 600);
       }
     }
+
+    window.onload = () => setMode('prov');
+  </script>
+</body>
+</html>
 
     window.onload = initGame;
   </script>
