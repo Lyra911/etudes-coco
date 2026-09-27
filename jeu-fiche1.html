@@ -38,7 +38,7 @@
       border-radius: 16px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.08);
       width: 100%;
-      max-width: 680px;
+      max-width: 720px;
       padding: 24px;
       text-align: center;
     }
@@ -93,7 +93,6 @@
       margin-bottom: 20px;
     }
 
-    /* Grilles d'association */
     .match-columns {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -104,23 +103,41 @@
     .match-col {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
 
+    /* Bouton d'association avec image */
     .btn-item {
       background: white;
       border: 2px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 10px;
+      border-radius: 12px;
+      padding: 10px;
       font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
-      min-height: 52px;
+      min-height: 56px;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
+      gap: 6px;
       transition: all 0.15s ease;
+    }
+
+    .btn-item img {
+      width: 100%;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    /* Style spécifique pour les logos pour ne pas les déformer */
+    .btn-item img.logo-img {
+      height: 50px;
+      object-fit: contain;
+      background: #ffffff;
+      padding: 2px;
     }
 
     .btn-item:hover {
@@ -139,6 +156,10 @@
       border-color: var(--success) !important;
       color: #22543D !important;
       cursor: default;
+    }
+
+    .btn-item.matched img {
+      opacity: 0.8;
     }
 
     .feedback {
@@ -171,11 +192,11 @@
       <span class="score-badge">Score : <span id="total-score">0</span> pts</span>
     </div>
 
-    <!-- MISSION 1 : PARCS ET PAYS -->
+    <!-- MISSION 1 : PARCS ET PAYS (AVEC PHOTOS) -->
     <div id="step-1">
       <div class="step-indicator">Mission 1 sur 3</div>
       <h2>Tour du monde des parcs célèbres 🌍</h2>
-      <p class="instruction">Clique sur un parc à gauche, puis sur son pays à droite pour les associer :</p>
+      <p class="instruction">Regarde les photos, clique sur un parc à gauche, puis associe-le à son pays à droite :</p>
       
       <div class="match-columns">
         <div class="match-col" id="col-parks"></div>
@@ -199,11 +220,11 @@
       <button id="btn-next-2" class="btn-next-step hidden" onclick="startStep3()">Passer à la mission 3 ➡</button>
     </div>
 
-    <!-- MISSION 3 : ORGANISMES -->
+    <!-- MISSION 3 : ORGANISMES (AVEC LOGOS) -->
     <div id="step-3" class="hidden">
       <div class="step-indicator">Mission 3 sur 3</div>
       <h2>Qui gère quoi ? (Les Organismes) 🛡️</h2>
-      <p class="instruction">Associe chaque organisme à sa mission exacte :</p>
+      <p class="instruction">Observe les logos et associe chaque organisme à sa mission exacte :</p>
       
       <div class="match-columns">
         <div class="match-col" id="col-orgs"></div>
@@ -222,12 +243,12 @@
       document.getElementById('total-score').innerText = totalScore;
     }
 
-    // --- MISSION 1 DATA ---
+    // --- MISSION 1 DATA (avec images) ---
     const parksData = [
-      { id: "p1", name: "Parc national de Banff", match: "c1" },
-      { id: "p2", name: "Parc de Yellowstone", match: "c2" },
-      { id: "p3", name: "Parc du Serengeti", match: "c3" },
-      { id: "p4", name: "Grande Barrière de corail", match: "c4" }
+      { id: "p1", name: "Parc national de Banff", img: "images/banff.jpg", match: "c1" },
+      { id: "p2", name: "Parc de Yellowstone", img: "images/yellowstone.jpg", match: "c2" },
+      { id: "p3", name: "Parc du Serengeti", img: "images/serengeti.jpg", match: "c3" },
+      { id: "p4", name: "Grande Barrière de corail", img: "images/corail.jpg", match: "c4" }
     ];
     const countriesData = [
       { id: "c1", name: "Canada 🇨🇦" },
@@ -250,12 +271,12 @@
       { id: "cd4", text: "Grande variété d'écosystèmes et biodiversité élevée" }
     ];
 
-    // --- MISSION 3 DATA ---
+    // --- MISSION 3 DATA (avec logos) ---
     const orgsData = [
-      { id: "o1", name: "Sépaq", match: "od1" },
-      { id: "o2", name: "Parcs Canada", match: "od2" },
-      { id: "o3", name: "UNESCO", match: "od3" },
-      { id: "o4", name: "UICN", match: "od4" }
+      { id: "o1", name: "Sépaq", img: "images/sepaq.png", isLogo: true, match: "od1" },
+      { id: "o2", name: "Parcs Canada", img: "images/parcs-canada.png", isLogo: true, match: "od2" },
+      { id: "o3", name: "UNESCO", img: "images/unesco.png", isLogo: true, match: "od3" },
+      { id: "o4", name: "UICN", img: "images/uicn.png", isLogo: true, match: "od4" }
     ];
     const orgDefs = [
       { id: "od1", text: "Organisme québécois qui gère les parcs et réserves du Québec" },
@@ -264,7 +285,7 @@
       { id: "od4", text: "Produit la Liste rouge des espèces menacées dans le monde" }
     ];
 
-    // --- FONCTION DE JEU D'ASSOCIATION GÉNÉRIQUE ---
+    // --- GESTION DU MATCH ---
     function setupMatchGame(colAId, itemsA, colBId, itemsB, feedbackId, nextBtnId, onComplete) {
       const colA = document.getElementById(colAId);
       const colB = document.getElementById(colBId);
@@ -272,14 +293,25 @@
       let selectedA = null;
       let matchedCount = 0;
 
-      // Mélanger la colonne de droite
       const shuffledB = [...itemsB].sort(() => Math.random() - 0.5);
 
       itemsA.forEach(item => {
         const btn = document.createElement('button');
         btn.className = "btn-item";
-        btn.innerText = item.name;
         btn.dataset.id = item.id;
+
+        if (item.img) {
+          const img = document.createElement('img');
+          img.src = item.img;
+          img.alt = item.name;
+          if (item.isLogo) img.classList.add('logo-img');
+          btn.appendChild(img);
+        }
+
+        const label = document.createElement('span');
+        label.innerText = item.name;
+        btn.appendChild(label);
+
         btn.onclick = () => {
           if (btn.classList.contains('matched')) return;
           colA.querySelectorAll('.btn-item').forEach(b => b.classList.remove('selected'));
@@ -300,7 +332,6 @@
           if (btn.classList.contains('matched') || !selectedA) return;
 
           if (selectedA.match === item.id) {
-            // Bonne réponse !
             addScore(10);
             fb.innerHTML = "✅ Excellent match ! (+10 pts)";
             fb.style.color = "var(--success)";
@@ -318,7 +349,6 @@
               if (onComplete) onComplete();
             }
           } else {
-            // Mauvaise réponse
             fb.innerHTML = "❌ Pas tout à fait... essaie encore !";
             fb.style.color = "var(--danger)";
           }
