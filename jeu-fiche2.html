@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jeu 2 : L'Explorateur des Galápagos</title>
+  <style>
+    :root {
+      --primary: #2B6CB0;
+      --primary-dark: #1A4971;
+      --secondary: #319795;
+      --success: #38A169;
+      --danger: #E53E3E;
+      --bg: #F0F4F8;
+      --card: #FFFFFF;
+      --text: #2D3748;
+      --border: #CBD5E0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 680px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .btn-nav {
+      background: #EDF2F7;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .btn-nav:hover { background: #E2E8F0; }
+
+    .score-badge {
+      background: #EBF8FF;
+      color: var(--primary);
+      border: 1px solid #BEE3F8;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+    }
+
+    .step-indicator {
+      font-size: 0.9rem;
+      color: #718096;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      color: var(--primary);
+      margin-bottom: 12px;
+      font-size: 1.3rem;
+    }
+
+    p.instruction {
+      font-size: 0.95rem;
+      color: #4A5568;
+      margin-bottom: 20px;
+    }
+
+    /* Grilles d'association */
+    .match-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .match-col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-item {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+
+    .btn-item:hover {
+      border-color: var(--primary);
+      background: #F7FAFC;
+    }
+
+    .btn-item.selected {
+      border-color: var(--primary);
+      background: #EBF8FF;
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+
+    .btn-item.matched {
+      background: #C6F6D5 !important;
+      border-color: var(--success) !important;
+      color: #22543D !important;
+      cursor: default;
+    }
+
+    /* Cartes Quiz QCM */
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .quiz-btn {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+    }
+    .quiz-btn:hover { border-color: var(--primary); background: #F8FAFC; }
+    .quiz-btn.correct { background: #C6F6D5; border-color: var(--success); color: #22543D; }
+    .quiz-btn.wrong { background: #FED7D7; border-color: var(--danger); color: #9B2C2C; }
+
+    .feedback {
+      min-height: 40px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    .btn-next-step {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn-next-step:hover { background: var(--primary-dark); }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header-bar">
+      <a href="index.html" class="btn-nav">⬅ Menu</a>
+      <span class="score-badge">Score : <span id="total-score">0</span> pts</span>
+    </div>
+
+    <!-- MISSION 1 : IDENTITÉ GÉOGRAPHIQUE -->
+    <div id="step-1">
+      <div class="step-indicator">Mission 1 sur 3</div>
+      <h2>La Carte d'Identité des Galápagos 🗺️</h2>
+      <p class="instruction">Associe chaque donnée géographique à sa description :</p>
+      
+      <div class="match-columns">
+        <div class="match-col" id="col-geo"></div>
+        <div class="match-col" id="col-geo-defs"></div>
+      </div>
+      <div class="feedback" id="fb-1"></div>
+      <button id="btn-next-1" class="btn-next-step hidden" onclick="startStep2()">Passer à la mission 2 ➡</button>
+    </div>
+
+    <!-- MISSION 2 : ESPÈCES EMBLÉMATIQUES -->
+    <div id="step-2" class="hidden">
+      <div class="step-indicator">Mission 2 sur 3</div>
+      <h2>La Faune Emblématique 🐢</h2>
+      <p class="instruction">Relie chaque animal à son trait caractéristique :</p>
+      
+      <div class="match-columns">
+        <div class="match-col" id="col-animals"></div>
+        <div class="match-col" id="col-animal-defs"></div>
+      </div>
+      <div class="feedback" id="fb-2"></div>
+      <button id="btn-next-2" class="btn-next-step hidden" onclick="startStep3()">Passer à la mission 3 ➡</button>
+    </div>
+
+    <!-- MISSION 3 : ADAPTATIONS AU MILIEU -->
+    <div id="step-3" class="hidden">
+      <div class="step-indicator">Mission 3 sur 3</div>
+      <h2>Les Étonnantes Adaptations 🦎</h2>
+      <p class="instruction" id="q-text">Chargement de la question...</p>
+      
+      <div class="quiz-options" id="quiz-options"></div>
+      <div class="feedback" id="fb-3"></div>
+      <button id="btn-restart" class="btn-next-step hidden" onclick="location.reload()">Rejouer pour un score parfait 🔄</button>
+    </div>
+  </div>
+
+  <script>
+    let totalScore = 0;
+
+    function addScore(pts) {
+      totalScore += pts;
+      document.getElementById('total-score').innerText = totalScore;
+    }
+
+    // --- DONNÉES MISSION 1 (Fiche 2) ---
+    const geoData = [
+      { id: "g1", name: "Pays d'appartenance", match: "gd1" },
+      { id: "g2", name: "Océan", match: "gd2" },
+      { id: "g3", name: "Distance du continent", match: "gd3" },
+      { id: "g4", name: "Territoire protégé", match: "gd4" }
+    ];
+    const geoDefs = [
+      { id: "gd1", text: "Équateur 🇪🇨" },
+      { id: "gd2", text: "Océan Pacifique" },
+      { id: "gd3", text: "Environ 1 000 km de la côte" },
+      { id: "gd4", text: "97 % en parc national" }
+    ];
+
+    // --- DONNÉES MISSION 2 (Fiche 2) ---
+    const animalsData = [
+      { id: "a1", name: "Iguane marin 🦎", match: "ad1" },
+      { id: "a2", name: "Tortue géante 🐢", match: "ad2" },
+      { id: "a3", name: "Fou à pieds bleus 🐦", match: "ad3" },
+      { id: "a4", name: "Manchot des Galápagos 🐧", match: "ad4" }
+    ];
+    const animalDefs = [
+      { id: "ad1", text: "Nage sous l'eau et se nourrit d'algues marines" },
+      { id: "ad2", text: "Espèce terrestre endémique emblématique de l'archipel" },
+      { id: "ad3", text: "Oiseau marin célèbre pour la couleur vive de ses pattes" },
+      { id: "ad4", text: "Seul manchot vivant à l'état sauvage près de l'équateur" }
+    ];
+
+    // --- JEU D'ASSOCIATION ---
+    function setupMatchGame(colAId, itemsA, colBId, itemsB, feedbackId, nextBtnId, onComplete) {
+      const colA = document.getElementById(colAId);
+      const colB = document.getElementById(colBId);
+      const fb = document.getElementById(feedbackId);
+      let selectedA = null;
+      let matchedCount = 0;
+
+      const shuffledB = [...itemsB].sort(() => Math.random() - 0.5);
+
+      itemsA.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = "btn-item";
+        btn.innerText = item.name;
+        btn.dataset.id = item.id;
+        btn.onclick = () => {
+          if (btn.classList.contains('matched')) return;
+          colA.querySelectorAll('.btn-item').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedA = item;
+          fb.innerText = "Sélectionne la réponse correspondante à droite !";
+          fb.style.color = "#4A5568";
+        };
+        colA.appendChild(btn);
+      });
+
+      shuffledB.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = "btn-item";
+        btn.innerText = item.text;
+        btn.dataset.id = item.id;
+        btn.onclick = () => {
+          if (btn.classList.contains('matched') || !selectedA) return;
+
+          if (selectedA.match === item.id) {
+            addScore(10);
+            fb.innerHTML = "✅ Excellent ! (+10 pts)";
+            fb.style.color = "var(--success)";
+
+            const btnA = colA.querySelector(`[data-id="${selectedA.id}"]`);
+            btnA.classList.remove('selected');
+            btnA.classList.add('matched');
+            btn.classList.add('matched');
+            selectedA = null;
+            matchedCount++;
+
+            if (matchedCount === itemsA.length) {
+              fb.innerHTML = "🎉 Mission réussie !";
+              document.getElementById(nextBtnId).classList.remove('hidden');
+              if (onComplete) onComplete();
+            }
+          } else {
+            fb.innerHTML = "❌ Mauvaise association, réessaie !";
+            fb.style.color = "var(--danger)";
+          }
+        };
+        colB.appendChild(btn);
+      });
+    }
+
+    // Démarrer Step 1
+    setupMatchGame("col-geo", geoData, "col-geo-defs", geoDefs, "fb-1", "btn-next-1");
+
+    function startStep2() {
+      document.getElementById('step-1').classList.add('hidden');
+      document.getElementById('step-2').classList.remove('hidden');
+      setupMatchGame("col-animals", animalsData, "col-animal-defs", animalDefs, "fb-2", "btn-next-2");
+    }
+
+    // --- MISSION 3 : QUESTIONS À CHOIX MULTIPLES (Fiche 2) ---
+    const quizQuestions = [
+      {
+        q: "Que signifie le mot « espèce endémique » ?",
+        options: [
+          { text: "Une espèce que l'on retrouve uniquement à cet endroit sur Terre", correct: true },
+          { text: "Une espèce importée accidentellement par les bateaux touristiques", correct: false },
+          { text: "Une espèce qui a complètement disparu de la planète", correct: false }
+        ]
+      },
+      {
+        q: "Comment l'iguane marin s'est-il adapté à son environnement insulaire ?",
+        options: [
+          { text: "Il vole d'île en île pour trouver des fruits tropicaux", correct: false },
+          { text: "Il nage en apnée dans l'eau froide pour brouter les algues sur les rochers", correct: true },
+          { text: "Il creuse des tunnels sous la lave pour hiberner l'hiver", correct: false }
+        ]
+      },
+      {
+        q: "Quelle est l'origine géologique de la formation des îles Galápagos ?",
+        options: [
+          { text: "L'activité volcanique à la jonction de plaques tectoniques", correct: true },
+          { text: "L'accumulation progressive de sable due aux courants marins", correct: false },
+          { text: "Un morceau détaché du continent sud-américain par un séisme", correct: false }
+        ]
+      }
+    ];
+
+    let currentQ = 0;
+
+    function startStep3() {
+      document.getElementById('step-2').classList.add('hidden');
+      document.getElementById('step-3').classList.remove('hidden');
+      loadQuizQuestion();
+    }
+
+    function loadQuizQuestion() {
+      const q = quizQuestions[currentQ];
+      document.getElementById('q-text').innerText = `Question ${currentQ + 1} sur ${quizQuestions.length} : ${q.q}`;
+      const optContainer = document.getElementById('quiz-options');
+      optContainer.innerHTML = "";
+      document.getElementById('fb-3').innerText = "";
+
+      q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = "quiz-btn";
+        btn.innerText = opt.text;
+        btn.onclick = () => {
+          const allBtns = optContainer.querySelectorAll('.quiz-btn');
+          allBtns.forEach(b => b.disabled = true);
+
+          if (opt.correct) {
+            btn.classList.add('correct');
+            addScore(15);
+            document.getElementById('fb-3').innerHTML = "✅ Bonne réponse ! (+15 pts)";
+            document.getElementById('fb-3').style.color = "var(--success)";
+          } else {
+            btn.classList.add('wrong');
+            document.getElementById('fb-3').innerHTML = "❌ Erreur ! La bonne réponse était affichée en vert.";
+            document.getElementById('fb-3').style.color = "var(--danger)";
+            allBtns.forEach(b => {
+              if (b.innerText === q.options.find(o => o.correct).text) {
+                b.classList.add('correct');
+              }
+            });
+          }
+
+          setTimeout(() => {
+            currentQ++;
+            if (currentQ < quizQuestions.length) {
+              loadQuizQuestion();
+            } else {
+              document.getElementById('q-text').innerText = "Module terminé !";
+              optContainer.innerHTML = "";
+              document.getElementById('fb-3').innerHTML = "🏆 Bravo Coco ! Tu as exploré les Galápagos et tu maîtrises la faune et la géographie !";
+              document.getElementById('btn-restart').classList.remove('hidden');
+            }
+          }, 1500);
+        };
+        optContainer.appendChild(btn);
+      });
+    }
+  </script>
+</body>
+</html>
