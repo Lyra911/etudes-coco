@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jeu 1 : Inspecteur des Parcs Naturels</title>
+  <style>
+    :root {
+      --primary: #2B6CB0;
+      --primary-dark: #1A4971;
+      --success: #38A169;
+      --danger: #E53E3E;
+      --bg: #F0F4F8;
+      --card: #FFFFFF;
+      --text: #2D3748;
+      --border: #CBD5E0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 680px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .btn-nav {
+      background: #EDF2F7;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .btn-nav:hover { background: #E2E8F0; }
+
+    .score-badge {
+      background: #EBF8FF;
+      color: var(--primary);
+      border: 1px solid #BEE3F8;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+    }
+
+    .step-indicator {
+      font-size: 0.9rem;
+      color: #718096;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      color: var(--primary);
+      margin-bottom: 12px;
+      font-size: 1.3rem;
+    }
+
+    p.instruction {
+      font-size: 0.95rem;
+      color: #4A5568;
+      margin-bottom: 20px;
+    }
+
+    /* Grilles d'association */
+    .match-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .match-col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-item {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+
+    .btn-item:hover {
+      border-color: var(--primary);
+      background: #F7FAFC;
+    }
+
+    .btn-item.selected {
+      border-color: var(--primary);
+      background: #EBF8FF;
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+
+    .btn-item.matched {
+      background: #C6F6D5 !important;
+      border-color: var(--success) !important;
+      color: #22543D !important;
+      cursor: default;
+    }
+
+    .feedback {
+      min-height: 40px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    .btn-next-step {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn-next-step:hover { background: var(--primary-dark); }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header-bar">
+      <a href="index.html" class="btn-nav">⬅ Menu</a>
+      <span class="score-badge">Score : <span id="total-score">0</span> pts</span>
+    </div>
+
+    <!-- MISSION 1 : PARCS ET PAYS -->
+    <div id="step-1">
+      <div class="step-indicator">Mission 1 sur 3</div>
+      <h2>Tour du monde des parcs célèbres 🌍</h2>
+      <p class="instruction">Clique sur un parc à gauche, puis sur son pays à droite pour les associer :</p>
+      
+      <div class="match-columns">
+        <div class="match-col" id="col-parks"></div>
+        <div class="match-col" id="col-countries"></div>
+      </div>
+      <div class="feedback" id="fb-1"></div>
+      <button id="btn-next-1" class="btn-next-step hidden" onclick="startStep2()">Passer à la mission 2 ➡</button>
+    </div>
+
+    <!-- MISSION 2 : CRITÈRES UNESCO -->
+    <div id="step-2" class="hidden">
+      <div class="step-indicator">Mission 2 sur 3</div>
+      <h2>Les 4 critères de l'UNESCO 🏛️</h2>
+      <p class="instruction">Associe chaque critère officiel à ce qu'il évalue :</p>
+      
+      <div class="match-columns">
+        <div class="match-col" id="col-criteria"></div>
+        <div class="match-col" id="col-criteria-defs"></div>
+      </div>
+      <div class="feedback" id="fb-2"></div>
+      <button id="btn-next-2" class="btn-next-step hidden" onclick="startStep3()">Passer à la mission 3 ➡</button>
+    </div>
+
+    <!-- MISSION 3 : ORGANISMES -->
+    <div id="step-3" class="hidden">
+      <div class="step-indicator">Mission 3 sur 3</div>
+      <h2>Qui gère quoi ? (Les Organismes) 🛡️</h2>
+      <p class="instruction">Associe chaque organisme à sa mission exacte :</p>
+      
+      <div class="match-columns">
+        <div class="match-col" id="col-orgs"></div>
+        <div class="match-col" id="col-org-defs"></div>
+      </div>
+      <div class="feedback" id="fb-3"></div>
+      <button id="btn-restart" class="btn-next-step hidden" onclick="location.reload()">Rejouer pour perfectionner son score 🔄</button>
+    </div>
+  </div>
+
+  <script>
+    let totalScore = 0;
+
+    function addScore(pts) {
+      totalScore += pts;
+      document.getElementById('total-score').innerText = totalScore;
+    }
+
+    // --- MISSION 1 DATA ---
+    const parksData = [
+      { id: "p1", name: "Parc national de Banff", match: "c1" },
+      { id: "p2", name: "Parc de Yellowstone", match: "c2" },
+      { id: "p3", name: "Parc du Serengeti", match: "c3" },
+      { id: "p4", name: "Grande Barrière de corail", match: "c4" }
+    ];
+    const countriesData = [
+      { id: "c1", name: "Canada 🇨🇦" },
+      { id: "c2", name: "États-Unis 🇺🇸" },
+      { id: "c3", name: "Tanzanie 🇹🇿" },
+      { id: "c4", name: "Australie 🇦🇺" }
+    ];
+
+    // --- MISSION 2 DATA ---
+    const criteriaData = [
+      { id: "cr1", name: "1. Esthétique", match: "cd1" },
+      { id: "cr2", name: "2. Géologique", match: "cd2" },
+      { id: "cr3", name: "3. Biologique", match: "cd3" },
+      { id: "cr4", name: "4. Diversité", match: "cd4" }
+    ];
+    const criteriaDefs = [
+      { id: "cd1", text: "Beauté exceptionnelle des paysages naturels" },
+      { id: "cd2", text: "Volcans, montagnes, plaques tectoniques, canyons" },
+      { id: "cd3", text: "Grande richesse en espèces animales et végétales rares" },
+      { id: "cd4", text: "Grande variété d'écosystèmes et biodiversité élevée" }
+    ];
+
+    // --- MISSION 3 DATA ---
+    const orgsData = [
+      { id: "o1", name: "Sépaq", match: "od1" },
+      { id: "o2", name: "Parcs Canada", match: "od2" },
+      { id: "o3", name: "UNESCO", match: "od3" },
+      { id: "o4", name: "UICN", match: "od4" }
+    ];
+    const orgDefs = [
+      { id: "od1", text: "Organisme québécois qui gère les parcs et réserves du Québec" },
+      { id: "od2", text: "Organisme fédéral qui gère les parcs nationaux du Canada" },
+      { id: "od3", text: "Inscrit les sites d'une valeur universelle au patrimoine mondial" },
+      { id: "od4", text: "Produit la Liste rouge des espèces menacées dans le monde" }
+    ];
+
+    // --- FONCTION DE JEU D'ASSOCIATION GÉNÉRIQUE ---
+    function setupMatchGame(colAId, itemsA, colBId, itemsB, feedbackId, nextBtnId, onComplete) {
+      const colA = document.getElementById(colAId);
+      const colB = document.getElementById(colBId);
+      const fb = document.getElementById(feedbackId);
+      let selectedA = null;
+      let matchedCount = 0;
+
+      // Mélanger la colonne de droite
+      const shuffledB = [...itemsB].sort(() => Math.random() - 0.5);
+
+      itemsA.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = "btn-item";
+        btn.innerText = item.name;
+        btn.dataset.id = item.id;
+        btn.onclick = () => {
+          if (btn.classList.contains('matched')) return;
+          colA.querySelectorAll('.btn-item').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedA = item;
+          fb.innerText = "Choisis maintenant la correspondance à droite !";
+          fb.style.color = "#4A5568";
+        };
+        colA.appendChild(btn);
+      });
+
+      shuffledB.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = "btn-item";
+        btn.innerText = item.name || item.text;
+        btn.dataset.id = item.id;
+        btn.onclick = () => {
+          if (btn.classList.contains('matched') || !selectedA) return;
+
+          if (selectedA.match === item.id) {
+            // Bonne réponse !
+            addScore(10);
+            fb.innerHTML = "✅ Excellent match ! (+10 pts)";
+            fb.style.color = "var(--success)";
+
+            const btnA = colA.querySelector(`[data-id="${selectedA.id}"]`);
+            btnA.classList.remove('selected');
+            btnA.classList.add('matched');
+            btn.classList.add('matched');
+            selectedA = null;
+            matchedCount++;
+
+            if (matchedCount === itemsA.length) {
+              fb.innerHTML = "🎉 Mission accomplie avec brio !";
+              document.getElementById(nextBtnId).classList.remove('hidden');
+              if (onComplete) onComplete();
+            }
+          } else {
+            // Mauvaise réponse
+            fb.innerHTML = "❌ Pas tout à fait... essaie encore !";
+            fb.style.color = "var(--danger)";
+          }
+        };
+        colB.appendChild(btn);
+      });
+    }
+
+    // Lancer Step 1
+    setupMatchGame("col-parks", parksData, "col-countries", countriesData, "fb-1", "btn-next-1");
+
+    function startStep2() {
+      document.getElementById('step-1').classList.add('hidden');
+      document.getElementById('step-2').classList.remove('hidden');
+      setupMatchGame("col-criteria", criteriaData, "col-criteria-defs", criteriaDefs, "fb-2", "btn-next-2");
+    }
+
+    function startStep3() {
+      document.getElementById('step-2').classList.add('hidden');
+      document.getElementById('step-3').classList.remove('hidden');
+      setupMatchGame("col-orgs", orgsData, "col-org-defs", orgDefs, "fb-3", "btn-restart", () => {
+        document.getElementById('fb-3').innerHTML = "🏆 Bravo Coco ! Tu maîtrises parfaitement la fiche 1 pour l'examen !";
+      });
+    }
+  </script>
+</body>
+</html>
