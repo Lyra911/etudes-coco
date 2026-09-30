@@ -377,6 +377,27 @@
     // Lancer la vérification au démarrage
     window.onload = verifierMemoireNinja;
 
+  <!-- IMPORTATION DE FIREBASE -->
+  <script type="module">
+    // On importe les outils Firebase directement depuis le web
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    // Ta configuration unique
+    const firebaseConfig = {
+      apiKey: "AIzaSyD0GbueWsIm8kaUnB6sZYykYSZl11s2JTs",
+      authDomain: "tuteur-ai.firebaseapp.com",
+      projectId: "tuteur-ai",
+      storageBucket: "tuteur-ai.firebasestorage.app",
+      messagingSenderId: "1025983965857",
+      appId: "1:1025983965857:web:121d32b494c8433f9f1ee0"
+    };
+
+    // Initialisation du serveur et de la base de données
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    
+    console.log("🔥 Connexion au cerveau Firebase réussie !");
   </script>
 </body>
 </html>
