@@ -250,33 +250,28 @@
         <button class="btn-primary btn-ninja"><i class="fa-solid fa-bolt"></i> Lancer le défi de révision</button>
       </div>
 
-      <!-- ZONE SCANNER DE MATIÈRE ET DOCUMENTS -->
+      <!-- ZONE SCANNER DE MATIÈRE ET FICHE VISUELLE -->
       <div class="glass-card" style="text-align: center; background: linear-gradient(135deg, rgba(161, 140, 209, 0.15) 0%, rgba(251, 194, 235, 0.15) 100%); border: 1px solid rgba(251, 194, 235, 0.3);">
         <i class="fa-solid fa-file-arrow-up" style="font-size: 32px; color: #fbc2eb; margin-bottom: 10px;"></i>
-        <h3 style="margin-bottom: 8px;">Transformer en jeu</h3>
-        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 15px;">Photographie des notes ou ajoute un document (PDF, Word, PPT...)</p>
+        <h3 style="margin-bottom: 8px;">Fiches et Matière</h3>
+        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 15px;">Ajoute une fiche imagée ou des notes de cours</p>
         
-        <!-- Input modifié pour accepter les images ET les documents -->
         <input type="file" id="camera-input" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.txt" style="display: none;">
         
         <button onclick="document.getElementById('camera-input').click()" class="btn-primary" style="background: linear-gradient(90deg, #a18cd1 0%, #fbc2eb 100%); box-shadow: 0 4px 15px rgba(161, 140, 209, 0.4);">
-          <i class="fa-solid fa-plus"></i> Ajouter la matière
+          <i class="fa-solid fa-plus"></i> Importer une fiche
         </button>
         
-        <!-- Zone de prévisualisation intelligente (cachée au départ) -->
+        <!-- Zone de prévisualisation -->
         <div id="preview-zone" style="display: none; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 2px dashed rgba(255,255,255,0.2);">
-          
-          <!-- Affichage si c'est une image -->
           <img id="image-preview" style="width: 100%; border-radius: 8px; display: none;" />
-          
-          <!-- Affichage si c'est un document (PDF, Word...) -->
           <div id="doc-preview" style="display: none; text-align: center;">
             <i class="fa-solid fa-file-lines" style="font-size: 40px; color: #a18cd1; margin-bottom: 10px;"></i>
             <p id="doc-name" style="font-size: 14px; font-weight: bold; word-break: break-all;"></p>
           </div>
 
           <p id="analysis-text" style="font-size: 13px; color: #00f2fe; margin-top: 15px; font-weight: bold;">
-            <i class="fa-solid fa-spinner fa-spin"></i> L'IA analyse le contenu...
+            <i class="fa-solid fa-spinner fa-spin"></i> Sauvegarde dans le dossier de l'élève...
           </p>
         </div>
       </div>
@@ -335,9 +330,10 @@
 
   <!-- IMPORTATION DE FIREBASE ET DU MOTEUR JAVASCRIPT -->
   <script type="module">
-    // 1. On importe les outils Firebase
+    // 1. On importe les outils Firebase (Firestore + Storage pour les images/fiches)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js";
 
     // 2. Tes clés secrètes Firebase
     const firebaseConfig = {
@@ -349,14 +345,14 @@
       appId: "1:1025983965857:web:121d32b494c8433f9f1ee0"
     };
 
-    // 3. On allume le serveur
+    // 3. On allume le serveur et le stockage
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    console.log("🔥 Cerveau Firebase connecté !");
+    const storage = getStorage(app);
+    console.log("🔥 Cerveau et coffre Firebase connectés !");
 
     // --- LE MOTEUR NINJA (Version Cloud) ---
 
-    // Fonction pour LIRE la base de données
     async function verifierMemoireNinja() {
       let zoneAlerte = document.getElementById('ninja-alert');
       let listeErreurs = document.getElementById('erreurs-list');
@@ -381,7 +377,6 @@
       }
     }
 
-    // Fonction pour ÉCRIRE dans la base de données
     window.simulerErreur = async function() {
       await addDoc(collection(db, "erreurs_coco"), {
         matiere: "Géographie",
@@ -390,7 +385,6 @@
       verifierMemoireNinja(); 
     };
 
-    // Fonction pour EFFACER la base de données
     window.effacerErreurs = async function() {
       const querySnapshot = await getDocs(collection(db, "erreurs_coco"));
       querySnapshot.forEach(async (document) => {
@@ -399,8 +393,8 @@
       setTimeout(verifierMemoireNinja, 500); 
     };
 
-    // --- MOTEUR DU SCANNER (Caméra & Documents) ---
-    document.getElementById('camera-input').addEventListener('change', function(event) {
+    // --- MOTEUR DE SAUVEGARDE DES FICHES DANS LE DOSSIER DE L'ÉLÈVE ---
+    document.getElementById('camera-input').addEventListener('change', async function(event) {
       const fichier = event.target.files[0];
       
       if (fichier) {
@@ -411,26 +405,59 @@
         document.getElementById('image-preview').style.display = 'none';
         document.getElementById('doc-preview').style.display = 'none';
         
+        let texteAnalyse = document.getElementById('analysis-text');
+        texteAnalyse.style.color = "#00f2fe";
+        texteAnalyse.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sauvegarde de la fiche dans le dossier de Coco...';
+
         if (typeFichier.startsWith('image/')) {
           const lecteur = new FileReader();
-          lecteur.onload = function(e) {
-            document.getElementById('image-preview').src = e.target.result;
+          lecteur.onload = async function(e) {
+            let base64Image = e.target.result;
+            document.getElementById('image-preview').src = base64Image;
             document.getElementById('image-preview').style.display = 'block';
+
+            try {
+              // 1. Enregistrement de l'image dans le coffre Firebase Storage
+              const storageRef = ref(storage, 'fiches_coco/' + Date.now() + '_' + nomFichier);
+              await uploadString(storageRef, base64Image, 'data_url');
+              let lienImage = await getDownloadURL(storageRef);
+
+              // 2. Enregistrement de la référence de la fiche dans le dossier Firestore de l'élève
+              await addDoc(collection(db, "dossier_eleves_fiches"), {
+                eleve: "Coco",
+                nomFiche: nomFichier,
+                urlFiche: lienImage,
+                date: new Date().toLocaleDateString()
+              });
+
+              texteAnalyse.style.color = "#4facfe";
+              texteAnalyse.innerHTML = '<i class="fa-solid fa-check-circle"></i> Fiche visuelle enregistrée avec succès !';
+            } catch (erreur) {
+              console.error("Erreur de sauvegarde : ", erreur);
+              texteAnalyse.style.color = "#ff5858";
+              texteAnalyse.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Erreur lors de l\'enregistrement.';
+            }
           };
           lecteur.readAsDataURL(fichier);
         } else {
           document.getElementById('doc-name').textContent = nomFichier;
           document.getElementById('doc-preview').style.display = 'block';
+          
+          try {
+            // Sauvegarde d'un document non-image dans Firestore
+            await addDoc(collection(db, "dossier_eleves_fiches"), {
+              eleve: "Coco",
+              nomFiche: nomFichier,
+              type: "Document",
+              date: new Date().toLocaleDateString()
+            });
+
+            texteAnalyse.style.color = "#4facfe";
+            texteAnalyse.innerHTML = '<i class="fa-solid fa-check-circle"></i> Document ajouté au dossier de l\'élève !';
+          } catch (erreur) {
+            console.error("Erreur : ", erreur);
+          }
         }
-        
-        let texteAnalyse = document.getElementById('analysis-text');
-        texteAnalyse.style.color = "#00f2fe";
-        texteAnalyse.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> L\'IA lit la matière...';
-        
-        setTimeout(() => {
-          texteAnalyse.style.color = "#4facfe";
-          texteAnalyse.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Matière intégrée ! Prêt pour le jeu.';
-        }, 3000);
       }
     });
 
