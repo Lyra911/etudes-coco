@@ -20,7 +20,7 @@
     }
 
     body {
-      background-color: #0f172a; /* Fond de la vraie page web */
+      background-color: #0f172a;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -28,11 +28,10 @@
       color: white;
     }
 
-    /* --- LE CONTENEUR SMARTPHONE (L'Application) --- */
+    /* --- LE CONTENEUR SMARTPHONE --- */
     .phone-container {
       width: 390px;
       height: 844px;
-      /* Le fameux dégradé cosmique de tes maquettes */
       background: linear-gradient(145deg, #0d1b2a 0%, #1b263b 40%, #2e4465 100%);
       border-radius: 45px;
       border: 6px solid #1e293b;
@@ -43,7 +42,6 @@
       flex-direction: column;
     }
 
-    /* Petite encoche (Notch) pour faire vrai */
     .notch {
       width: 120px;
       height: 25px;
@@ -60,10 +58,8 @@
     .content-area {
       flex-grow: 1;
       overflow-y: auto;
-      padding: 40px 20px 100px 20px; /* Espace en bas pour le menu */
+      padding: 40px 20px 100px 20px;
     }
-
-    /* Cache la barre de scroll pour un look épuré */
     .content-area::-webkit-scrollbar { display: none; }
 
     /* --- EN-TÊTE --- */
@@ -108,9 +104,8 @@
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
       transition: transform 0.3s ease;
     }
-    .glass-card:hover { transform: translateY(-3px); }
 
-    /* --- ZONE DU TUTEUR (Le Compagnon) --- */
+    /* --- ZONE DU TUTEUR --- */
     .tutor-zone {
       display: flex;
       align-items: center;
@@ -133,9 +128,6 @@
     .tutor-speech p { font-size: 13px; color: #cbd5e1; line-height: 1.4; }
 
     /* --- BARRE DE PROGRESSION --- */
-    .progress-container {
-      margin-top: 15px;
-    }
     .progress-labels {
       display: flex;
       justify-content: space-between;
@@ -166,7 +158,6 @@
     #ninja-alert h3 { color: #ff8a8a; display: flex; align-items: center; gap: 8px; margin-bottom: 10px;}
     .ninja-list { margin: 10px 0 15px 20px; font-size: 14px; color: #f8fafc; }
 
-    /* --- BOUTONS --- */
     .btn-primary {
       background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
       color: white;
@@ -177,10 +168,7 @@
       width: 100%;
       cursor: pointer;
       box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4);
-      transition: all 0.2s;
     }
-    .btn-primary:active { transform: scale(0.96); }
-
     .btn-ninja {
       background: linear-gradient(90deg, #ff5858 0%, #f09819 100%);
       box-shadow: 0 4px 15px rgba(255, 88, 88, 0.4);
@@ -208,22 +196,9 @@
       font-size: 11px;
       gap: 6px;
       cursor: pointer;
-      transition: color 0.3s;
     }
     .nav-item i { font-size: 20px; }
     .nav-item.active { color: #00f2fe; }
-
-    /* Bouton dev pour tester */
-    .dev-panel {
-      position: absolute;
-      right: -250px;
-      top: 50px;
-      background: #1e293b;
-      padding: 20px;
-      border-radius: 10px;
-      width: 230px;
-    }
-    .dev-panel button { margin-top: 10px; padding: 8px; width: 100%; cursor: pointer; border-radius: 5px; border:none; font-weight: bold;}
   </style>
 </head>
 <body>
@@ -246,11 +221,11 @@
       <!-- Le Compagnon (Tuteur) -->
       <div class="glass-card tutor-zone">
         <div class="tutor-icon">
-          <i class="fa-solid fa-fire-flame-curved"></i> <!-- Remplace par l'image de Nox ou Lumi plus tard -->
+          <i class="fa-solid fa-fire-flame-curved"></i>
         </div>
         <div class="tutor-speech">
           <h3 id="tutor-title">Nox est avec toi !</h3>
-          <p id="tutor-message">Tu fais de l'excellent travail aujourd'margin. Continue sur cette lancée !</p>
+          <p id="tutor-message">Tu fais de l'excellent travail aujourd'hui. Continue sur cette lancée !</p>
         </div>
       </div>
 
@@ -265,7 +240,7 @@
         </div>
       </div>
 
-      <!-- ALERTE NINJA (Apparaît seulement s'il y a des erreurs enregistrées) -->
+      <!-- ALERTE NINJA (Cachée par défaut) -->
       <div class="glass-card" id="ninja-alert">
         <h3><i class="fa-solid fa-user-ninja"></i> Mode Ninja Activé</h3>
         <p style="font-size: 13px; color: #cbd5e1;">J'ai observé tes parties précédentes. Il semble qu'on doive revoir certaines choses ensemble :</p>
@@ -288,6 +263,17 @@
         </div>
       </div>
 
+      <!-- ZONE DE TEST VISIBLE (Pour contrôler Firebase) -->
+      <div class="glass-card" style="border: 1px solid #f09819;">
+        <h3 style="margin-bottom: 10px; font-size: 14px; color: #f09819;">🛠️ Zone de Test</h3>
+        <button onclick="simulerErreur()" style="background: linear-gradient(90deg, #f09819 0%, #ff5858 100%); color: white; padding: 12px; border-radius: 12px; border: none; width: 100%; margin-bottom: 10px; cursor: pointer; font-weight: bold;">
+          1. Simuler une erreur
+        </button>
+        <button onclick="effacerErreurs()" style="background: #475569; color: white; padding: 12px; border-radius: 12px; border: none; width: 100%; cursor: pointer; font-weight: bold;">
+          2. Effacer la mémoire
+        </button>
+      </div>
+
     </div>
 
     <!-- Navigation du bas -->
@@ -301,7 +287,6 @@
         <span>Cours</span>
       </div>
       <div class="nav-item" style="position: relative; top: -15px;">
-        <!-- Bouton IA flottant central -->
         <div style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; color: white; box-shadow: 0 10px 20px rgba(161, 140, 209, 0.4);">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
         </div>
@@ -317,73 +302,13 @@
     </div>
   </div>
 
-  <!-- PANNEAU DE TEST POUR TOI (Hors de l'écran du tel) -->
-  <div class="dev-panel">
-    <h3 style="font-size: 14px; margin-bottom: 10px;">🛠️ Outils de Test Ninja</h3>
-    <p style="font-size: 11px; color: #94a3b8;">Clique ici pour simuler que Coco vient de rater un jeu sur une autre page de ton site.</p>
-    <button onclick="simulerErreur()" style="background: #f09819; color: white;">1. Simuler une erreur au Canada</button>
-    <button onclick="effacerErreurs()" style="background: #475569; color: white;">2. Effacer la mémoire</button>
-  </div>
-
-  <script>
-    // === LE MOTEUR NINJA ===
-
-    // Fonction qui s'exécute quand la page du tuteur s'ouvre
-    function verifierMemoireNinja() {
-      // 1. Le tuteur fouille dans la mémoire du navigateur (localStorage)
-      let memoire = localStorage.getItem('erreurs_coco_ninja');
-      let zoneAlerte = document.getElementById('ninja-alert');
-      let listeErreurs = document.getElementById('erreurs-list');
-      let messageTuteur = document.getElementById('tutor-message');
-
-      if (memoire) {
-        // S'il y a des erreurs, on les transforme en liste
-        let erreurs = JSON.parse(memoire);
-        if (erreurs.length > 0) {
-          listeErreurs.innerHTML = ''; // On vide la liste
-          erreurs.forEach(erreur => {
-            let li = document.createElement('li');
-            li.textContent = erreur;
-            listeErreurs.appendChild(li);
-          });
-          
-          // On affiche la carte Ninja et on change le discours du tuteur
-          zoneAlerte.style.display = 'block';
-          messageTuteur.innerHTML = "J'ai jeté un œil à tes parties... On a un petit défi à relever ensemble ! Regarde juste en dessous.";
-        }
-      } else {
-        // Pas d'erreur = on cache la carte Ninja
-        zoneAlerte.style.display = 'none';
-        messageTuteur.innerHTML = "Tu fais de l'excellent travail aujourd'hui. Continue sur cette lancée !";
-      }
-    }
-
-    // --- Fonctions pour le panneau de test (Pour tes essais) ---
-    function simulerErreur() {
-      // On fait comme si Coco s'était trompé sur la page Géographie
-      let erreursExistantes = JSON.parse(localStorage.getItem('erreurs_coco_ninja')) || [];
-      erreursExistantes.push("Géographie : Emplacement du Yukon");
-      localStorage.setItem('erreurs_coco_ninja', JSON.stringify(erreursExistantes));
-      
-      // On rafraîchit l'affichage
-      verifierMemoireNinja();
-    }
-
-    function effacerErreurs() {
-      localStorage.removeItem('erreurs_coco_ninja');
-      verifierMemoireNinja();
-    }
-
-    // Lancer la vérification au démarrage
-    window.onload = verifierMemoireNinja;
-
- <!-- IMPORTATION DE FIREBASE ET DU MOTEUR NINJA -->
+  <!-- IMPORTATION DE FIREBASE ET DU MOTEUR NINJA -->
   <script type="module">
     // 1. On importe les outils Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-    // 2. Tes clés secrètes
+    // 2. Tes clés secrètes Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyD0GbueWsIm8kaUnB6sZYykYSZl11s2JTs",
       authDomain: "tuteur-ai.firebaseapp.com",
@@ -410,23 +335,25 @@
       const querySnapshot = await getDocs(collection(db, "erreurs_coco"));
       
       if (!querySnapshot.empty) {
-        listeErreurs.innerHTML = '';
-        querySnapshot.forEach((doc) => {
-          let erreur = doc.data();
+        listeErreurs.innerHTML = ''; // On vide l'ancienne liste
+        querySnapshot.forEach((docInfos) => {
+          let erreur = docInfos.data();
           let li = document.createElement('li');
           li.textContent = erreur.matiere + " : " + erreur.detail;
           listeErreurs.appendChild(li);
         });
         
+        // Afficher l'alerte
         zoneAlerte.style.display = 'block';
         messageTuteur.innerHTML = "J'ai jeté un œil à tes parties... On a un petit défi à relever ensemble !";
       } else {
+        // Cacher l'alerte
         zoneAlerte.style.display = 'none';
         messageTuteur.innerHTML = "Tu fais de l'excellent travail aujourd'hui. Continue sur cette lancée !";
       }
     }
 
-    // Fonction pour ÉCRIRE dans la base de données (Reliée à ton bouton)
+    // Fonction pour ÉCRIRE dans la base de données (Reliée au bouton orange)
     window.simulerErreur = async function() {
       await addDoc(collection(db, "erreurs_coco"), {
         matiere: "Géographie",
@@ -435,16 +362,16 @@
       verifierMemoireNinja(); // On met à jour l'écran
     };
 
-    // Fonction pour EFFACER la base de données
+    // Fonction pour EFFACER la base de données (Reliée au bouton gris)
     window.effacerErreurs = async function() {
       const querySnapshot = await getDocs(collection(db, "erreurs_coco"));
       querySnapshot.forEach(async (document) => {
         await deleteDoc(doc(db, "erreurs_coco", document.id));
       });
-      setTimeout(verifierMemoireNinja, 500);
+      setTimeout(verifierMemoireNinja, 500); // Petit délai pour laisser le temps d'effacer
     };
 
-    // Lancer la vérification au démarrage de l'app
+    // Lancer la vérification au démarrage de l'application
     verifierMemoireNinja();
   </script>
 </body>
