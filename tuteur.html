@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon Tuteur Magique</title>
+  
+  <!-- Polices modernes -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <!-- Icônes -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    /* --- VARIABLES & RESET --- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: #0f172a; /* Fond de la vraie page web */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: white;
+    }
+
+    /* --- LE CONTENEUR SMARTPHONE (L'Application) --- */
+    .phone-container {
+      width: 390px;
+      height: 844px;
+      /* Le fameux dégradé cosmique de tes maquettes */
+      background: linear-gradient(145deg, #0d1b2a 0%, #1b263b 40%, #2e4465 100%);
+      border-radius: 45px;
+      border: 6px solid #1e293b;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.05);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Petite encoche (Notch) pour faire vrai */
+    .notch {
+      width: 120px;
+      height: 25px;
+      background: #1e293b;
+      border-radius: 0 0 15px 15px;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+    }
+
+    /* --- ZONE CONTENU SCROLLABLE --- */
+    .content-area {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 40px 20px 100px 20px; /* Espace en bas pour le menu */
+    }
+
+    /* Cache la barre de scroll pour un look épuré */
+    .content-area::-webkit-scrollbar { display: none; }
+
+    /* --- EN-TÊTE --- */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+    .header h1 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    .avatar-btn {
+      width: 45px;
+      height: 45px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 20px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* --- GLASSMORPHISM (Cartes) --- */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 24px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+    }
+    .glass-card:hover { transform: translateY(-3px); }
+
+    /* --- ZONE DU TUTEUR (Le Compagnon) --- */
+    .tutor-zone {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: linear-gradient(135deg, rgba(79, 172, 254, 0.15) 0%, rgba(0, 242, 254, 0.15) 100%);
+      border: 1px solid rgba(79, 172, 254, 0.3);
+    }
+    .tutor-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      border-radius: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 30px;
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+    }
+    .tutor-speech h3 { font-size: 16px; margin-bottom: 4px; }
+    .tutor-speech p { font-size: 13px; color: #cbd5e1; line-height: 1.4; }
+
+    /* --- BARRE DE PROGRESSION --- */
+    .progress-container {
+      margin-top: 15px;
+    }
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .progress-bar-bg {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 68%;
+      background: linear-gradient(90deg, #f6d365 0%, #fda085 100%);
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(253, 160, 133, 0.5);
+    }
+
+    /* --- MODULE NINJA (Caché par défaut) --- */
+    #ninja-alert {
+      display: none;
+      background: linear-gradient(135deg, rgba(255, 88, 88, 0.15) 0%, rgba(240, 152, 25, 0.15) 100%);
+      border: 1px solid rgba(255, 88, 88, 0.3);
+    }
+    #ninja-alert h3 { color: #ff8a8a; display: flex; align-items: center; gap: 8px; margin-bottom: 10px;}
+    .ninja-list { margin: 10px 0 15px 20px; font-size: 14px; color: #f8fafc; }
+
+    /* --- BOUTONS --- */
+    .btn-primary {
+      background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      padding: 12px 20px;
+      font-weight: 700;
+      width: 100%;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4);
+      transition: all 0.2s;
+    }
+    .btn-primary:active { transform: scale(0.96); }
+
+    .btn-ninja {
+      background: linear-gradient(90deg, #ff5858 0%, #f09819 100%);
+      box-shadow: 0 4px 15px rgba(255, 88, 88, 0.4);
+    }
+
+    /* --- NAVIGATION DU BAS --- */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 80px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding-bottom: 15px;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #64748b;
+      font-size: 11px;
+      gap: 6px;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    .nav-item i { font-size: 20px; }
+    .nav-item.active { color: #00f2fe; }
+
+    /* Bouton dev pour tester */
+    .dev-panel {
+      position: absolute;
+      right: -250px;
+      top: 50px;
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 10px;
+      width: 230px;
+    }
+    .dev-panel button { margin-top: 10px; padding: 8px; width: 100%; cursor: pointer; border-radius: 5px; border:none; font-weight: bold;}
+  </style>
+</head>
+<body>
+
+  <!-- LE TÉLÉPHONE -->
+  <div class="phone-container">
+    <div class="notch"></div>
+
+    <div class="content-area">
+      
+      <!-- En-tête -->
+      <div class="header">
+        <div>
+          <h1>Bonjour Coco ! 👋</h1>
+          <p>Prêt pour de nouvelles découvertes ?</p>
+        </div>
+        <div class="avatar-btn"><i class="fa-solid fa-bell"></i></div>
+      </div>
+
+      <!-- Le Compagnon (Tuteur) -->
+      <div class="glass-card tutor-zone">
+        <div class="tutor-icon">
+          <i class="fa-solid fa-fire-flame-curved"></i> <!-- Remplace par l'image de Nox ou Lumi plus tard -->
+        </div>
+        <div class="tutor-speech">
+          <h3 id="tutor-title">Nox est avec toi !</h3>
+          <p id="tutor-message">Tu fais de l'excellent travail aujourd'margin. Continue sur cette lancée !</p>
+        </div>
+      </div>
+
+      <!-- Progression -->
+      <div class="glass-card">
+        <div class="progress-labels">
+          <span>Ta progression globale</span>
+          <span style="color: #fda085;">68%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill"></div>
+        </div>
+      </div>
+
+      <!-- ALERTE NINJA (Apparaît seulement s'il y a des erreurs enregistrées) -->
+      <div class="glass-card" id="ninja-alert">
+        <h3><i class="fa-solid fa-user-ninja"></i> Mode Ninja Activé</h3>
+        <p style="font-size: 13px; color: #cbd5e1;">J'ai observé tes parties précédentes. Il semble qu'on doive revoir certaines choses ensemble :</p>
+        <ul class="ninja-list" id="erreurs-list">
+          <!-- Les erreurs s'afficheront ici -->
+        </ul>
+        <button class="btn-primary btn-ninja"><i class="fa-solid fa-bolt"></i> Lancer le défi de révision</button>
+      </div>
+
+      <!-- Cours / Fiches récentes -->
+      <div class="glass-card">
+        <h3 style="margin-bottom: 15px; font-size: 16px;">📚 Reprendre la session</h3>
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <div style="width: 50px; height: 50px; background: url('https://placehold.co/100x100/2e4465/FFF?text=Parcs') center/cover; border-radius: 12px;"></div>
+          <div style="flex-grow: 1;">
+            <p style="font-weight: 600; font-size: 14px;">Les parcs du Canada</p>
+            <p style="font-size: 12px; color: #94a3b8;">Géographie • Étape 3/7</p>
+          </div>
+          <i class="fa-solid fa-circle-play" style="font-size: 28px; color: #4facfe;"></i>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Navigation du bas -->
+    <div class="bottom-nav">
+      <div class="nav-item active">
+        <i class="fa-solid fa-house"></i>
+        <span>Accueil</span>
+      </div>
+      <div class="nav-item">
+        <i class="fa-solid fa-book-open"></i>
+        <span>Cours</span>
+      </div>
+      <div class="nav-item" style="position: relative; top: -15px;">
+        <!-- Bouton IA flottant central -->
+        <div style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; color: white; box-shadow: 0 10px 20px rgba(161, 140, 209, 0.4);">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+      </div>
+      <div class="nav-item">
+        <i class="fa-solid fa-layer-group"></i>
+        <span>Fiches</span>
+      </div>
+      <div class="nav-item">
+        <i class="fa-solid fa-ellipsis"></i>
+        <span>Plus</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANNEAU DE TEST POUR TOI (Hors de l'écran du tel) -->
+  <div class="dev-panel">
+    <h3 style="font-size: 14px; margin-bottom: 10px;">🛠️ Outils de Test Ninja</h3>
+    <p style="font-size: 11px; color: #94a3b8;">Clique ici pour simuler que Coco vient de rater un jeu sur une autre page de ton site.</p>
+    <button onclick="simulerErreur()" style="background: #f09819; color: white;">1. Simuler une erreur au Canada</button>
+    <button onclick="effacerErreurs()" style="background: #475569; color: white;">2. Effacer la mémoire</button>
+  </div>
+
+  <script>
+    // === LE MOTEUR NINJA ===
+
+    // Fonction qui s'exécute quand la page du tuteur s'ouvre
+    function verifierMemoireNinja() {
+      // 1. Le tuteur fouille dans la mémoire du navigateur (localStorage)
+      let memoire = localStorage.getItem('erreurs_coco_ninja');
+      let zoneAlerte = document.getElementById('ninja-alert');
+      let listeErreurs = document.getElementById('erreurs-list');
+      let messageTuteur = document.getElementById('tutor-message');
+
+      if (memoire) {
+        // S'il y a des erreurs, on les transforme en liste
+        let erreurs = JSON.parse(memoire);
+        if (erreurs.length > 0) {
+          listeErreurs.innerHTML = ''; // On vide la liste
+          erreurs.forEach(erreur => {
+            let li = document.createElement('li');
+            li.textContent = erreur;
+            listeErreurs.appendChild(li);
+          });
+          
+          // On affiche la carte Ninja et on change le discours du tuteur
+          zoneAlerte.style.display = 'block';
+          messageTuteur.innerHTML = "J'ai jeté un œil à tes parties... On a un petit défi à relever ensemble ! Regarde juste en dessous.";
+        }
+      } else {
+        // Pas d'erreur = on cache la carte Ninja
+        zoneAlerte.style.display = 'none';
+        messageTuteur.innerHTML = "Tu fais de l'excellent travail aujourd'hui. Continue sur cette lancée !";
+      }
+    }
+
+    // --- Fonctions pour le panneau de test (Pour tes essais) ---
+    function simulerErreur() {
+      // On fait comme si Coco s'était trompé sur la page Géographie
+      let erreursExistantes = JSON.parse(localStorage.getItem('erreurs_coco_ninja')) || [];
+      erreursExistantes.push("Géographie : Emplacement du Yukon");
+      localStorage.setItem('erreurs_coco_ninja', JSON.stringify(erreursExistantes));
+      
+      // On rafraîchit l'affichage
+      verifierMemoireNinja();
+    }
+
+    function effacerErreurs() {
+      localStorage.removeItem('erreurs_coco_ninja');
+      verifierMemoireNinja();
+    }
+
+    // Lancer la vérification au démarrage
+    window.onload = verifierMemoireNinja;
+
+  </script>
+</body>
+</html>
