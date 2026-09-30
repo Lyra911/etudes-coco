@@ -377,13 +377,13 @@
     // Lancer la vérification au démarrage
     window.onload = verifierMemoireNinja;
 
-  <!-- IMPORTATION DE FIREBASE -->
+ <!-- IMPORTATION DE FIREBASE ET DU MOTEUR NINJA -->
   <script type="module">
-    // On importe les outils Firebase directement depuis le web
+    // 1. On importe les outils Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-    // Ta configuration unique
+    // 2. Tes clés secrètes
     const firebaseConfig = {
       apiKey: "AIzaSyD0GbueWsIm8kaUnB6sZYykYSZl11s2JTs",
       authDomain: "tuteur-ai.firebaseapp.com",
@@ -393,11 +393,59 @@
       appId: "1:1025983965857:web:121d32b494c8433f9f1ee0"
     };
 
-    // Initialisation du serveur et de la base de données
+    // 3. On allume le serveur
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    
-    console.log("🔥 Connexion au cerveau Firebase réussie !");
+    console.log("🔥 Cerveau Firebase connecté !");
+
+    // --- LE MOTEUR NINJA (Version Cloud) ---
+
+    // Fonction pour LIRE la base de données
+    async function verifierMemoireNinja() {
+      let zoneAlerte = document.getElementById('ninja-alert');
+      let listeErreurs = document.getElementById('erreurs-list');
+      let messageTuteur = document.getElementById('tutor-message');
+
+      // On fouille dans le tiroir "erreurs_coco" sur le serveur
+      const querySnapshot = await getDocs(collection(db, "erreurs_coco"));
+      
+      if (!querySnapshot.empty) {
+        listeErreurs.innerHTML = '';
+        querySnapshot.forEach((doc) => {
+          let erreur = doc.data();
+          let li = document.createElement('li');
+          li.textContent = erreur.matiere + " : " + erreur.detail;
+          listeErreurs.appendChild(li);
+        });
+        
+        zoneAlerte.style.display = 'block';
+        messageTuteur.innerHTML = "J'ai jeté un œil à tes parties... On a un petit défi à relever ensemble !";
+      } else {
+        zoneAlerte.style.display = 'none';
+        messageTuteur.innerHTML = "Tu fais de l'excellent travail aujourd'hui. Continue sur cette lancée !";
+      }
+    }
+
+    // Fonction pour ÉCRIRE dans la base de données (Reliée à ton bouton)
+    window.simulerErreur = async function() {
+      await addDoc(collection(db, "erreurs_coco"), {
+        matiere: "Géographie",
+        detail: "Emplacement du Yukon"
+      });
+      verifierMemoireNinja(); // On met à jour l'écran
+    };
+
+    // Fonction pour EFFACER la base de données
+    window.effacerErreurs = async function() {
+      const querySnapshot = await getDocs(collection(db, "erreurs_coco"));
+      querySnapshot.forEach(async (document) => {
+        await deleteDoc(doc(db, "erreurs_coco", document.id));
+      });
+      setTimeout(verifierMemoireNinja, 500);
+    };
+
+    // Lancer la vérification au démarrage de l'app
+    verifierMemoireNinja();
   </script>
 </body>
 </html>
