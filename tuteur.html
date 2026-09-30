@@ -174,6 +174,43 @@
       box-shadow: 0 4px 15px rgba(255, 88, 88, 0.4);
     }
 
+    /* --- GRILLE DES MODES DE JEU --- */
+    .games-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .game-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 15px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .game-card:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(0, 242, 254, 0.4);
+      transform: translateY(-2px);
+    }
+    .game-card i {
+      font-size: 22px;
+      color: #00f2fe;
+      margin-bottom: 8px;
+    }
+    .game-card h4 {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .game-card p {
+      font-size: 11px;
+      color: #94a3b8;
+      line-height: 1.3;
+    }
+
     /* --- NAVIGATION DU BAS --- */
     .bottom-nav {
       position: absolute;
@@ -276,16 +313,47 @@
         </div>
       </div>
 
-      <!-- Cours / Fiches récentes -->
+      <!-- SÉLECTEUR DE MODES DE JEU (Les 15 superbes idées) -->
       <div class="glass-card">
-        <h3 style="margin-bottom: 15px; font-size: 16px;">📚 Reprendre la session</h3>
-        <div style="display: flex; align-items: center; gap: 15px;">
-          <div style="width: 50px; height: 50px; background: url('https://placehold.co/100x100/2e4465/FFF?text=Parcs') center/cover; border-radius: 12px;"></div>
-          <div style="flex-grow: 1;">
-            <p style="font-weight: 600; font-size: 14px;">Les parcs du Canada</p>
-            <p style="font-size: 12px; color: #94a3b8;">Géographie • Étape 3/7</p>
+        <h3 style="margin-bottom: 10px; font-size: 16px;"><i class="fa-solid fa-gamepad" style="color: #00f2fe; margin-right: 8px;"></i> Choisis ton mode de jeu</h3>
+        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 15px;">Transforme ta matière scannée en une aventure interactive :</p>
+        
+        <div class="games-grid">
+          <div class="game-card" onclick="lancerModeJeu('Compagnon Évolutif')">
+            <i class="fa-solid fa-dragon"></i>
+            <h4>Compagnon IA</h4>
+            <p>Nourris ta créature avec tes notes !</p>
           </div>
-          <i class="fa-solid fa-circle-play" style="font-size: 28px; color: #4facfe;"></i>
+          
+          <div class="game-card" onclick="lancerModeJeu('Donjon Généré')">
+            <i class="fa-solid fa-dungeon"></i>
+            <h4>Donjon Magique</h4>
+            <p>Conquiers le donjon du chapitre.</p>
+          </div>
+
+          <div class="game-card" onclick="lancerModeJeu('Chasse aux erreurs')">
+            <i class="fa-solid fa-bullseye"></i>
+            <h4>Chasse aux pièges</h4>
+            <p>Trouve ce que l'IA a modifié !</p>
+          </div>
+
+          <div class="game-card" onclick="lancerModeJeu('Combat de monstres')">
+            <i class="fa-solid fa-wand-sparkles"></i>
+            <h4>Combat Éducatif</h4>
+            <p>Une bonne réponse = un sortilège.</p>
+          </div>
+
+          <div class="game-card" onclick="lancerModeJeu('Détective scientifique')">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <h4>Enquête Mystère</h4>
+            <p>Résous l'affaire avec les indices.</p>
+          </div>
+
+          <div class="game-card" onclick="lancerModeJeu('Histoire dont tu es le héros')">
+            <i class="fa-solid fa-book-open-reader"></i>
+            <h4>Aventure Héroïque</h4>
+            <p>Vis l'histoire de l'intérieur.</p>
+          </div>
         </div>
       </div>
 
@@ -393,6 +461,13 @@
       setTimeout(verifierMemoireNinja, 500); 
     };
 
+    // --- SÉLECTION DU MODE DE JEU ---
+    window.lancerModeJeu = function(nomMode) {
+      let messageTuteur = document.getElementById('tutor-message');
+      document.getElementById('tutor-title').textContent = "Mode " + nomMode;
+      messageTuteur.innerHTML = "Super choix ! Je prépare ton aventure <b>" + nomMode + "</b> basée sur ta matière scannée...";
+    };
+
     // --- MOTEUR DE SAUVEGARDE DES FICHES DANS LE DOSSIER DE L'ÉLÈVE ---
     document.getElementById('camera-input').addEventListener('change', async function(event) {
       const fichier = event.target.files[0];
@@ -417,12 +492,10 @@
             document.getElementById('image-preview').style.display = 'block';
 
             try {
-              // 1. Enregistrement de l'image dans le coffre Firebase Storage
               const storageRef = ref(storage, 'fiches_coco/' + Date.now() + '_' + nomFichier);
               await uploadString(storageRef, base64Image, 'data_url');
               let lienImage = await getDownloadURL(storageRef);
 
-              // 2. Enregistrement de la référence de la fiche dans le dossier Firestore de l'élève
               await addDoc(collection(db, "dossier_eleves_fiches"), {
                 eleve: "Coco",
                 nomFiche: nomFichier,
@@ -444,7 +517,6 @@
           document.getElementById('doc-preview').style.display = 'block';
           
           try {
-            // Sauvegarde d'un document non-image dans Firestore
             await addDoc(collection(db, "dossier_eleves_fiches"), {
               eleve: "Coco",
               nomFiche: nomFichier,
